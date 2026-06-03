@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Gate & Port Codes{% endblock %}
+{% block content %}
+<header class="topbar">
+  <div class="topbar-brand">
+    <span class="brand-icon">🚪</span>
+    <h1>Gate &amp; Port Codes</h1>
+  </div>
+  <div class="topbar-actions">
+    <button type="button" class="btn btn-ghost" id="btn-change-password" title="Change app password">Settings</button>
+    <a href="{{ url_for('main.logout') }}" class="btn btn-ghost">Log out</a>
+  </div>
+</header>
+
+<main class="dashboard">
+  <section class="panel panel-form">
+    <h2 id="form-title">Add entry</h2>
+    <p class="panel-hint">Each name can have multiple codes (1st, 2nd, 3rd…). Add as many names as you need.</p>
+    <form id="entry-form">
+      <input type="hidden" id="entry-id" value="">
+      <div class="field">
+        <label for="entry-name">Name <span class="req">*</span></label>
+        <input type="text" id="entry-name" required placeholder="e.g. Client Smith — Main gate" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Codes</label>
+        <div id="codes-container" class="codes-container"></div>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-add-code">+ Add another code</button>
+      </div>
+      <div class="field">
+        <label for="entry-notes">Notes <span class="optional">(optional)</span></label>
+        <textarea id="entry-notes" rows="2" placeholder="Location, directions, etc."></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="btn-save">Save entry</button>
+        <button type="button" class="btn btn-ghost hidden" id="btn-cancel">Cancel edit</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel panel-list">
+    <div class="panel-header">
+      <h2>Saved entries <span class="badge" id="entry-count">{{ entries|length }}</span></h2>
+      <input type="search" id="search" class="search-input" placeholder="Search names…" autocomplete="off">
+    </div>
+    <div id="entries-list" class="entries-list">
+      {% if entries %}
+        {% for entry in entries %}
+        <article class="entry-card" data-id="{{ entry.id }}" data-name="{{ entry.name|lower }}">
+          <div class="entry-header">
+            <h3 class="entry-name">{{ entry.name }}</h3>
+            <div class="entry-actions">
+              <button type="button" class="btn-icon btn-edit" data-id="{{ entry.id }}" title="Edit">✏️</button>
+              <button type="button" class="btn-icon btn-delete" data-id="{{ entry.id }}" title="Delete">🗑️</button>
+            </div>
+          </div>
+          <ol class="code-list">
+            {% for code in entry.codes %}
+            <li>
+              <span class="code-label">{{ loop.index }}{% if loop.index == 1 %}st{% elif loop.index == 2 %}nd{% elif loop.index == 3 %}rd{% else %}th{% endif %} code</span>
+              <code class="code-value" data-code>{{ code }}</code>
+              <button type="button" class="btn-copy" data-copy="{{ code }}" title="Copy">📋</button>
+            </li>
+            {% endfor %}
+          </ol>
+          {% if entry.notes %}
+          <p class="entry-notes">{{ entry.notes }}</p>
+          {% endif %}
+        </article>
+        {% endfor %}
+      {% else %}
+        <p class="empty-state" id="empty-state">No entries yet. Add your first gate or port name above.</p>
+      {% endif %}
+    </div>
+  </section>
+</main>
+
+<dialog id="password-dialog" class="modal">
+  <form method="dialog" id="password-form">
+    <h3>Change app password</h3>
+    <div class="field">
+      <label for="current-password">Current password</label>
+      <input type="password" id="current-password" required autocomplete="current-password">
+    </div>
+    <div class="field">
+      <label for="new-password">New password</label>
+      <input type="password" id="new-password" required minlength="6" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label for="confirm-password">Confirm new password</label>
+      <input type="password" id="confirm-password" required minlength="6" autocomplete="new-password">
+    </div>
+    <p class="form-error hidden" id="password-error"></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-ghost" id="btn-close-dialog">Cancel</button>
+      <button type="submit" class="btn btn-primary">Update password</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

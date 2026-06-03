@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Set Up Password — Gate & Port Codes{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+{% block content %}
+<main class="auth-card">
+  <div class="auth-icon">🔐</div>
+  <h1>Welcome</h1>
+  <p class="auth-subtitle">Create a password to protect your gate and port codes.</p>
+  <form method="post" class="auth-form">
+    <label for="password">App password</label>
+    <input type="password" id="password" name="password" required minlength="6" autocomplete="new-password" placeholder="At least 6 characters">
+    <label for="confirm">Confirm password</label>
+    <input type="password" id="confirm" name="confirm" required minlength="6" autocomplete="new-password" placeholder="Repeat password">
+    <button type="submit" class="btn btn-primary btn-block">Create password &amp; enter</button>
+  </form>
+</main>
+{% endblock %}
