@@ -1,9 +1,6 @@
 (function () {
   const ORDINALS = ["1st", "2nd", "3rd"];
-  const baseEl = document.querySelector("base");
-  const BASE = baseEl
-    ? new URL(".", baseEl.href).href.replace(/\/$/, "")
-    : "";
+  // Relative paths work on GitHub Pages (/RepoName/) and local preview
 
   let sessionPassword = null;
   let entries = [];
@@ -374,6 +371,6 @@
 
   // Service worker
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register(`${BASE}/sw.js`).catch(() => {});
+    navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {});
   }
 })();

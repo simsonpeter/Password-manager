@@ -1,50 +1,45 @@
 # Gate & Port Code Manager
 
-Password-protected web app for managing client gate and port access codes. **Works on your phone — no PC needed.**
+Password-protected web app for client gate and port codes. **Use on your phone — no PC needed.**
 
-## Use the app (phone or any browser)
-
-After GitHub Pages is enabled, open:
+## Live app link
 
 **https://simsonpeter.github.io/Password-manager/**
 
-1. **First visit** — Create your app password (min 6 characters).
-2. **Every visit** — Enter your password to unlock.
-3. **Add entries** — Name + 1st code, 2nd code, add more codes as needed.
-4. **Add to home screen** (optional) — On iPhone/Android, use “Add to Home Screen” for an app-like icon.
+If you see **404** or **“cannot publish”**, read **[PUBLISH.md](PUBLISH.md)** — fix takes about 2 minutes.
 
-Your data is **encrypted on your device** (browser storage). Nobody can read it without your password.
+---
 
-### Backup (important)
+## Publish the site (one-time)
 
-Use **Download backup** in the app and save the file (e.g. Google Drive, email to yourself). If you clear browser data or change phones, use **Restore backup** with the same password.
+1. GitHub repo → **Settings** → **Pages**
+2. **Source:** Deploy from a branch
+3. **Branch:** `main` · **Folder:** `/docs`
+4. **Save** — wait 1–3 minutes
 
-## Enable the live website (one-time)
+Repo must be **Public** (free GitHub Pages).
 
-GitHub should deploy automatically when you push to `main`. If the link does not work yet:
+Full help: **[PUBLISH.md](PUBLISH.md)**
 
-1. Open your repo on GitHub → **Settings** → **Pages**
-2. Under **Build and deployment**, **Source** should be **GitHub Actions**
-3. After the workflow runs, the site URL appears on the Pages settings page
+---
+
+## Use on your phone
+
+1. Open the live link above
+2. **First time:** create app password (6+ characters)
+3. **Later:** enter password to unlock
+4. Add **name** + **codes** (1st, 2nd, 3rd — tap **+ Add another code**)
+5. **Add to Home Screen** for an app icon (optional)
+
+Data is **encrypted on your phone**. Use **Download backup** and save the file (Drive, email, etc.).
+
+---
 
 ## Features
 
-- App password protection
-- Multiple names (clients, gates, ports)
-- Multiple codes per name (1st, 2nd, 3rd…)
-- Search, copy, edit, delete
-- Optional notes per entry
+- App password lock
+- Many names, many codes per name
+- Search, copy, notes, edit, delete
 - Change password
-- Export / import encrypted backup
-- Works offline after first load (PWA)
-
-## Optional: run server version locally
-
-A Flask version is included in `app/` for local use on a computer:
-
-```bash
-pip install -r requirements.txt
-python run.py
-```
-
-The **recommended** setup for phone-only use is the **web app in `docs/`** deployed to GitHub Pages.
+- Backup / restore
+- Works offline after first visit
