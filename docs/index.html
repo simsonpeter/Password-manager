@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1419">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Password-protected gate and port codes for your clients">
+  <base href="/Password-manager/">
+  <title>Gate &amp; Port Codes</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- SETUP -->
+  <section id="screen-setup" class="screen auth-page">
+    <main class="auth-card">
+      <div class="auth-icon" aria-hidden="true">🔐</div>
+      <h1>Gate &amp; Port Codes</h1>
+      <p class="auth-subtitle">Create a password. Your codes are encrypted and saved on this phone.</p>
+      <form id="setup-form" class="auth-form">
+        <label for="setup-password">App password</label>
+        <input type="password" id="setup-password" required minlength="6" autocomplete="new-password" placeholder="At least 6 characters">
+        <label for="setup-confirm">Confirm password</label>
+        <input type="password" id="setup-confirm" required minlength="6" autocomplete="new-password" placeholder="Repeat password">
+        <button type="submit" class="btn btn-primary btn-block">Create &amp; start</button>
+      </form>
+    </main>
+  </section>
+
+  <!-- LOGIN -->
+  <section id="screen-login" class="screen auth-page hidden">
+    <main class="auth-card">
+      <div class="auth-icon" aria-hidden="true">🔒</div>
+      <h1>Unlock</h1>
+      <p class="auth-subtitle">Enter your app password.</p>
+      <form id="login-form" class="auth-form">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" required autocomplete="current-password" placeholder="Your password">
+        <button type="submit" class="btn btn-primary btn-block">Open</button>
+      </form>
+    </main>
+  </section>
+
+  <!-- MAIN APP -->
+  <section id="screen-app" class="screen hidden">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <span class="brand-icon" aria-hidden="true">🚪</span>
+        <h1>Gate &amp; Port Codes</h1>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-settings">Password</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-logout">Out</button>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section class="panel panel-form" id="panel-form">
+        <h2 id="form-title">Add entry</h2>
+        <p class="panel-hint">Name + multiple codes (1st, 2nd, 3rd…). Add as many names as you need.</p>
+        <form id="entry-form">
+          <input type="hidden" id="entry-id" value="">
+          <div class="field">
+            <label for="entry-name">Name <span class="req">*</span></label>
+            <input type="text" id="entry-name" required placeholder="e.g. Client — Main gate" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>Codes</label>
+            <div id="codes-container" class="codes-container"></div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-code">+ Add another code</button>
+          </div>
+          <div class="field">
+            <label for="entry-notes">Notes <span class="optional">(optional)</span></label>
+            <textarea id="entry-notes" rows="2" placeholder="Location, directions…"></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="btn-save">Save</button>
+            <button type="button" class="btn btn-ghost hidden" id="btn-cancel">Cancel</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel panel-list">
+        <div class="panel-header">
+          <h2>Saved <span class="badge" id="entry-count">0</span></h2>
+          <input type="search" id="search" class="search-input" placeholder="Search…" autocomplete="off">
+        </div>
+        <div id="entries-list" class="entries-list"></div>
+        <div class="backup-bar">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-export">Download backup</button>
+          <label class="btn btn-secondary btn-sm btn-file">
+            Restore backup
+            <input type="file" id="import-file" accept=".json,application/json" hidden>
+          </label>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <dialog id="password-dialog" class="modal">
+    <form id="password-form">
+      <h3>Change password</h3>
+      <div class="field">
+        <label for="current-password">Current</label>
+        <input type="password" id="current-password" required autocomplete="current-password">
+      </div>
+      <div class="field">
+        <label for="new-password">New</label>
+        <input type="password" id="new-password" required minlength="6" autocomplete="new-password">
+      </div>
+      <div class="field">
+        <label for="confirm-password">Confirm new</label>
+        <input type="password" id="confirm-password" required minlength="6" autocomplete="new-password">
+      </div>
+      <p class="form-error hidden" id="password-error"></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-ghost" id="btn-close-dialog">Cancel</button>
+        <button type="submit" class="btn btn-primary">Update</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/crypto.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

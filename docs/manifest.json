@@ -1,0 +1,19 @@
+{
+  "name": "Gate & Port Codes",
+  "short_name": "Gate Codes",
+  "description": "Password-protected gate and port access codes",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f1419",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

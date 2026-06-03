@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Gate icon">
+  <rect width="512" height="512" rx="96" fill="#1a2332"/>
+  <rect x="96" y="160" width="320" height="256" rx="24" fill="#3b82f6"/>
+  <rect x="200" y="256" width="112" height="160" rx="8" fill="#0f1419"/>
+  <circle cx="280" cy="336" r="16" fill="#22c55e"/>
+  <path d="M96 160 L256 64 L416 160" fill="none" stroke="#8b9cb3" stroke-width="20" stroke-linejoin="round"/>
+</svg>
