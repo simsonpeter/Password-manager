@@ -46,22 +46,39 @@
   </section>
 
   <!-- MAIN APP -->
-  <section id="screen-app" class="screen hidden">
+  <section id="screen-app" class="screen hidden app-shell">
     <header class="topbar">
       <div class="topbar-brand">
         <span class="brand-icon" aria-hidden="true">🚪</span>
         <h1>Gate &amp; Port Codes</h1>
       </div>
       <div class="topbar-actions">
-        <button type="button" class="btn btn-ghost btn-sm" id="btn-settings">Password</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-settings" title="Change password">⚙️</button>
         <button type="button" class="btn btn-ghost btn-sm" id="btn-logout">Out</button>
       </div>
     </header>
 
-    <main class="dashboard">
-      <section class="panel panel-form" id="panel-form">
-        <h2 id="form-title">Add entry</h2>
-        <p class="panel-hint">Name + multiple codes (1st, 2nd, 3rd…). Add as many names as you need.</p>
+    <!-- TAB: CODES -->
+    <div id="tab-codes" class="tab-panel active">
+      <div class="tab-toolbar">
+        <input type="search" id="search" class="search-input" placeholder="Search names…" autocomplete="off">
+        <span class="badge" id="entry-count">0</span>
+      </div>
+      <div id="entries-list" class="entries-list tab-scroll"></div>
+      <div class="backup-bar">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-export">Backup</button>
+        <label class="btn btn-secondary btn-sm btn-file">
+          Restore
+          <input type="file" id="import-file" accept=".json,application/json" hidden>
+        </label>
+      </div>
+    </div>
+
+    <!-- TAB: ADD -->
+    <div id="tab-add" class="tab-panel">
+      <div class="tab-scroll panel-form-inner">
+        <h2 id="form-title">Add new</h2>
+        <p class="panel-hint">Name + codes (1st, 2nd, 3rd…). Tap Save when done.</p>
         <form id="entry-form">
           <input type="hidden" id="entry-id" value="">
           <div class="field">
@@ -75,30 +92,26 @@
           </div>
           <div class="field">
             <label for="entry-notes">Notes <span class="optional">(optional)</span></label>
-            <textarea id="entry-notes" rows="2" placeholder="Location, directions…"></textarea>
+            <textarea id="entry-notes" rows="3" placeholder="Location, directions…"></textarea>
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary" id="btn-save">Save</button>
-            <button type="button" class="btn btn-ghost hidden" id="btn-cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-block" id="btn-save">Save</button>
+            <button type="button" class="btn btn-ghost btn-block hidden" id="btn-cancel">Cancel edit</button>
           </div>
         </form>
-      </section>
+      </div>
+    </div>
 
-      <section class="panel panel-list">
-        <div class="panel-header">
-          <h2>Saved <span class="badge" id="entry-count">0</span></h2>
-          <input type="search" id="search" class="search-input" placeholder="Search…" autocomplete="off">
-        </div>
-        <div id="entries-list" class="entries-list"></div>
-        <div class="backup-bar">
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-export">Download backup</button>
-          <label class="btn btn-secondary btn-sm btn-file">
-            Restore backup
-            <input type="file" id="import-file" accept=".json,application/json" hidden>
-          </label>
-        </div>
-      </section>
-    </main>
+    <nav class="tab-bar" role="tablist">
+      <button type="button" class="tab-btn active" data-tab="codes" role="tab" aria-selected="true">
+        <span class="tab-icon" aria-hidden="true">📋</span>
+        <span>Codes</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="add" role="tab" aria-selected="false">
+        <span class="tab-icon" aria-hidden="true">➕</span>
+        <span>Add</span>
+      </button>
+    </nav>
   </section>
 
   <dialog id="password-dialog" class="modal">

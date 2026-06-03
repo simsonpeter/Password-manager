@@ -1,6 +1,5 @@
 (function () {
   const ORDINALS = ["1st", "2nd", "3rd"];
-  // Relative paths work on GitHub Pages (/RepoName/) and local preview
 
   let sessionPassword = null;
   let entries = [];
@@ -12,6 +11,11 @@
     app: document.getElementById("screen-app"),
   };
 
+  const tabPanels = {
+    codes: document.getElementById("tab-codes"),
+    add: document.getElementById("tab-add"),
+  };
+
   function ordinal(n) {
     if (n <= 3) return ORDINALS[n - 1];
     return n + "th";
@@ -20,6 +24,17 @@
   function showScreen(name) {
     Object.values(screens).forEach((el) => el?.classList.add("hidden"));
     screens[name]?.classList.remove("hidden");
+  }
+
+  function switchTab(tabName) {
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      const active = btn.dataset.tab === tabName;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    Object.entries(tabPanels).forEach(([key, panel]) => {
+      panel?.classList.toggle("active", key === tabName);
+    });
   }
 
   function showToast(msg) {
@@ -41,6 +56,36 @@
       .replace(/&/g, "&amp;")
       .replace(/"/g, "&quot;")
       .replace(/</g, "&lt;");
+  }
+
+  function formatEntryForShare(entry) {
+    const lines = [entry.name, ""];
+    entry.codes.forEach((code, i) => {
+      lines.push(`${ordinal(i + 1)} code: ${code}`);
+    });
+    if (entry.notes) {
+      lines.push("", `Notes: ${entry.notes}`);
+    }
+    return lines.join("\n");
+  }
+
+  async function shareEntry(entry) {
+    const text = formatEntryForShare(entry);
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: entry.name, text });
+        showToast("Shared");
+        return;
+      } catch (err) {
+        if (err.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast("Copied for sharing");
+    } catch {
+      showToast("Share not available");
+    }
   }
 
   async function persist() {
@@ -68,7 +113,6 @@
     return true;
   }
 
-  // --- Code rows in form ---
   const codesContainer = document.getElementById("codes-container");
   const entryForm = document.getElementById("entry-form");
   const entryIdInput = document.getElementById("entry-id");
@@ -115,7 +159,7 @@
     codesContainer.innerHTML = "";
     codesContainer.appendChild(createCodeRow());
     renumberRows();
-    formTitle.textContent = "Add entry";
+    formTitle.textContent = "Add new";
     btnCancel.classList.add("hidden");
   }
 
@@ -130,7 +174,8 @@
     renumberRows();
     formTitle.textContent = "Edit entry";
     btnCancel.classList.remove("hidden");
-    document.getElementById("panel-form").scrollIntoView({ behavior: "smooth" });
+    switchTab("add");
+    nameInput.focus();
   }
 
   function getCodesFromForm() {
@@ -146,7 +191,7 @@
     entriesList.innerHTML = "";
     if (!sorted.length) {
       entriesList.innerHTML =
-        '<p class="empty-state">No entries yet. Add your first gate or port name above.</p>';
+        '<p class="empty-state">No codes yet.<br>Tap <strong>Add</strong> below to create one.</p>';
       entryCount.textContent = "0";
       return;
     }
@@ -168,15 +213,17 @@
       card.innerHTML = `
         <div class="entry-header">
           <h3 class="entry-name">${escapeHtml(entry.name)}</h3>
-          <div class="entry-actions">
-            <button type="button" class="btn-icon btn-edit" title="Edit">Edit</button>
-            <button type="button" class="btn-icon btn-delete" title="Delete">Del</button>
-          </div>
         </div>
         <ol class="code-list">${codesHtml}</ol>
         ${entry.notes ? `<p class="entry-notes">${escapeHtml(entry.notes)}</p>` : ""}
+        <div class="entry-footer">
+          <button type="button" class="btn btn-secondary btn-sm btn-edit">Edit</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-share">Share</button>
+          <button type="button" class="btn btn-ghost btn-sm btn-delete">Delete</button>
+        </div>
       `;
       card.querySelector(".btn-edit").addEventListener("click", () => fillForm(entry));
+      card.querySelector(".btn-share").addEventListener("click", () => shareEntry(entry));
       card.querySelector(".btn-delete").addEventListener("click", async () => {
         if (!confirm("Delete this entry?")) return;
         entries = entries.filter((e) => e.id !== entry.id);
@@ -211,7 +258,16 @@
     entryCount.textContent = q && total ? `${visible}/${total}` : String(total);
   }
 
-  // Setup form
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const tab = btn.dataset.tab;
+      switchTab(tab);
+      if (tab === "add" && !entryIdInput.value) {
+        resetForm();
+      }
+    });
+  });
+
   document.getElementById("setup-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const p1 = document.getElementById("setup-password").value;
@@ -220,30 +276,33 @@
     if (p1 !== p2) return showToast("Passwords do not match");
     await initialSetup(p1);
     showScreen("app");
+    switchTab("codes");
     resetForm();
     renderList();
     showToast("Ready — your data is encrypted on this device");
   });
 
-  // Login form
   document.getElementById("login-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const p = document.getElementById("login-password").value;
     const ok = await unlock(p);
     if (!ok) return showToast("Wrong password");
     showScreen("app");
+    switchTab("codes");
     resetForm();
     renderList();
   });
 
-  // Entry form
   document.getElementById("btn-add-code")?.addEventListener("click", () => {
     codesContainer.appendChild(createCodeRow());
     renumberRows();
     codesContainer.lastElementChild.querySelector("input").focus();
   });
 
-  btnCancel?.addEventListener("click", resetForm);
+  btnCancel?.addEventListener("click", () => {
+    resetForm();
+    switchTab("codes");
+  });
 
   entryForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -264,11 +323,11 @@
     await persist();
     resetForm();
     renderList();
+    switchTab("codes");
   });
 
   searchInput?.addEventListener("input", applySearch);
 
-  // Logout
   document.getElementById("btn-logout")?.addEventListener("click", () => {
     sessionPassword = null;
     entries = [];
@@ -277,7 +336,6 @@
     showToast("Logged out");
   });
 
-  // Change password
   const pwdDialog = document.getElementById("password-dialog");
   document.getElementById("btn-settings")?.addEventListener("click", () => {
     document.getElementById("password-form").reset();
@@ -316,7 +374,6 @@
     showToast("Password changed");
   });
 
-  // Export / Import backup
   document.getElementById("btn-export")?.addEventListener("click", () => {
     const bundle = Storage.loadBundle();
     if (!bundle) return showToast("Nothing to export");
@@ -335,9 +392,7 @@
     try {
       const bundle = JSON.parse(await file.text());
       if (!bundle.salt || !bundle.data) throw new Error("Invalid file");
-      const testPass = prompt(
-        "Enter the password for this backup file:"
-      );
+      const testPass = prompt("Enter the password for this backup file:");
       if (!testPass) return;
       const data = await CryptoUtil.decrypt(testPass, bundle);
       if (!data) return showToast("Wrong password for backup");
@@ -351,6 +406,7 @@
       Storage.saveBundle(bundle);
       await unlock(testPass);
       showScreen("app");
+      switchTab("codes");
       renderList();
       showToast("Backup restored");
     } catch {
@@ -359,7 +415,6 @@
     e.target.value = "";
   });
 
-  // Init
   codesContainer.appendChild(createCodeRow());
   renumberRows();
 
@@ -369,7 +424,6 @@
     showScreen("setup");
   }
 
-  // Service worker
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {});
   }

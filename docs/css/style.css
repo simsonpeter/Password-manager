@@ -156,6 +156,119 @@ body {
   gap: 0.5rem;
 }
 
+/* App shell with bottom tabs */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.app-shell .topbar {
+  flex-shrink: 0;
+}
+
+.tab-panel {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tab-panel.active {
+  display: flex;
+}
+
+.tab-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 1rem;
+}
+
+.tab-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem 0;
+  flex-shrink: 0;
+}
+
+.tab-toolbar .search-input {
+  flex: 1;
+}
+
+#tab-codes .entries-list {
+  max-height: none;
+  padding-top: 0.5rem;
+}
+
+#tab-codes .backup-bar {
+  flex-shrink: 0;
+  margin: 0 1rem 0.5rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.panel-form-inner {
+  padding-bottom: 2rem;
+}
+
+.panel-form-inner h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.2rem;
+}
+
+.entry-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.tab-bar {
+  display: flex;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0.6rem 0.5rem;
+  min-height: 56px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.tab-btn .tab-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.tab-btn.active {
+  color: var(--primary);
+}
+
+.tab-btn.active .tab-icon {
+  transform: scale(1.05);
+}
+
 .dashboard {
   display: grid;
   grid-template-columns: minmax(280px, 380px) 1fr;
