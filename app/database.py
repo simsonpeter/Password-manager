@@ -63,6 +63,11 @@ def set_setting(key: str, value: str) -> None:
         )
 
 
+def delete_setting(key: str) -> None:
+    with get_connection() as conn:
+        conn.execute("DELETE FROM settings WHERE key = ?", (key,))
+
+
 def has_app_password() -> bool:
     return get_setting("app_password_hash") is not None
 

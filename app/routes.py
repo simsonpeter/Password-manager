@@ -12,7 +12,7 @@ from flask import (
 )
 
 from app import database as db
-from app.factory import set_app_password, verify_app_password
+from app.factory import clear_app_password, set_app_password, verify_app_password
 
 bp = Blueprint("main", __name__)
 
@@ -77,6 +77,31 @@ def login():
         flash("Incorrect password.", "error")
 
     return render_template("login.html")
+
+
+@bp.route("/forgot-password")
+def forgot_password():
+    if not db.has_app_password():
+        return redirect(url_for("main.setup"))
+
+    if session.get("authenticated"):
+        return redirect(url_for("main.dashboard"))
+
+    return render_template("forgot_password.html")
+
+
+@bp.route("/forgot-password/reset-lock", methods=["POST"])
+def reset_password_lock():
+    if not db.has_app_password():
+        return redirect(url_for("main.setup"))
+
+    if session.get("authenticated"):
+        return redirect(url_for("main.dashboard"))
+
+    clear_app_password()
+    session.clear()
+    flash("Password lock removed. Create a new app password.", "success")
+    return redirect(url_for("main.setup"))
 
 
 @bp.route("/logout")

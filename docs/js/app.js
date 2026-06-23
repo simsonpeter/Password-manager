@@ -8,6 +8,7 @@
   const screens = {
     setup: document.getElementById("screen-setup"),
     login: document.getElementById("screen-login"),
+    forgot: document.getElementById("screen-forgot"),
     app: document.getElementById("screen-app"),
   };
 
@@ -293,6 +294,66 @@
     renderList();
   });
 
+  document.getElementById("btn-forgot-password")?.addEventListener("click", () => {
+    document.getElementById("forgot-restore-form")?.reset();
+    showScreen("forgot");
+  });
+
+  document.getElementById("btn-back-login")?.addEventListener("click", () => {
+    showScreen("login");
+  });
+
+  async function restoreBackup(bundle, password) {
+    if (!bundle?.salt || !bundle?.data) throw new Error("Invalid file");
+    const data = await CryptoUtil.decrypt(password, bundle);
+    if (!data) throw new Error("Wrong password");
+    if (
+      Storage.hasData() &&
+      !confirm("Replace all data on this device with the backup?")
+    ) {
+      return false;
+    }
+    Storage.saveBundle(bundle);
+    await unlock(password);
+    showScreen("app");
+    switchTab("codes");
+    resetForm();
+    renderList();
+    showToast("Backup restored");
+    return true;
+  }
+
+  document.getElementById("forgot-restore-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const file = document.getElementById("forgot-restore-file").files?.[0];
+    const password = document.getElementById("forgot-restore-password").value;
+    if (!file) return showToast("Choose a backup file");
+    try {
+      const bundle = JSON.parse(await file.text());
+      const ok = await restoreBackup(bundle, password);
+      if (ok === false) return;
+      if (!ok) showToast("Wrong password for backup");
+    } catch (err) {
+      if (err.message === "Wrong password") return showToast("Wrong password for backup");
+      showToast("Import failed");
+    }
+  });
+
+  document.getElementById("btn-start-over")?.addEventListener("click", () => {
+    const confirmed = confirm(
+      "This will permanently delete all codes on this device and let you create a new password.\n\nThis cannot be undone unless you have a backup file. Continue?"
+    );
+    if (!confirmed) return;
+    Storage.clear();
+    sessionPassword = null;
+    entries = [];
+    document.getElementById("login-password").value = "";
+    document.getElementById("setup-form")?.reset();
+    document.getElementById("forgot-restore-form")?.reset();
+    showScreen("setup");
+    showToast("App reset — create a new password");
+  });
+
   document.getElementById("btn-add-code")?.addEventListener("click", () => {
     codesContainer.appendChild(createCodeRow());
     renumberRows();
@@ -391,25 +452,13 @@
     if (!file) return;
     try {
       const bundle = JSON.parse(await file.text());
-      if (!bundle.salt || !bundle.data) throw new Error("Invalid file");
       const testPass = prompt("Enter the password for this backup file:");
       if (!testPass) return;
-      const data = await CryptoUtil.decrypt(testPass, bundle);
-      if (!data) return showToast("Wrong password for backup");
-      if (
-        Storage.hasData() &&
-        !confirm("Replace all data on this device with the backup?")
-      ) {
-        e.target.value = "";
-        return;
-      }
-      Storage.saveBundle(bundle);
-      await unlock(testPass);
-      showScreen("app");
-      switchTab("codes");
-      renderList();
-      showToast("Backup restored");
-    } catch {
+      const ok = await restoreBackup(bundle, testPass);
+      if (ok === false) return;
+      if (!ok) showToast("Wrong password for backup");
+    } catch (err) {
+      if (err.message === "Wrong password") return showToast("Wrong password for backup");
       showToast("Import failed");
     }
     e.target.value = "";
