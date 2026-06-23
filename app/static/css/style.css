@@ -98,6 +98,73 @@ body {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
+.auth-footer {
+  margin: 1rem 0 0;
+  text-align: center;
+}
+
+.auth-link {
+  color: var(--primary);
+  font-size: 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.auth-link:hover {
+  color: var(--primary-hover);
+}
+
+.recovery-card {
+  max-width: 420px;
+  text-align: left;
+}
+
+.recovery-card > .auth-icon,
+.recovery-card > h1,
+.recovery-card > .auth-subtitle {
+  text-align: center;
+}
+
+.recovery-section {
+  margin-top: 1.5rem;
+}
+
+.recovery-section + .recovery-section {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.recovery-heading {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.recovery-steps {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.recovery-steps li + li {
+  margin-top: 0.35rem;
+}
+
+.recovery-callout {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.recovery-callout-warn {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: var(--text);
+}
+
 .flash-container {
   position: fixed;
   top: 1rem;

@@ -42,4 +42,5 @@ Data is **encrypted on your phone**. Use **Download backup** and save the file (
 - Search, copy, notes, edit, delete
 - Change password
 - Backup / restore
+- Forgot password recovery (backup restore or start over)
 - Works offline after first visit

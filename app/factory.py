@@ -31,3 +31,7 @@ def verify_app_password(password: str) -> bool:
 
 def set_app_password(password: str) -> None:
     db.set_setting("app_password_hash", generate_password_hash(password))
+
+
+def clear_app_password() -> None:
+    db.delete_setting("app_password_hash")

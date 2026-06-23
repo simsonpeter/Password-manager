@@ -11,5 +11,8 @@
     <input type="password" id="password" name="password" required autofocus autocomplete="current-password" placeholder="Your app password">
     <button type="submit" class="btn btn-primary btn-block">Unlock</button>
   </form>
+  <p class="auth-footer">
+    <a class="auth-link" href="{{ url_for('main.forgot_password') }}">Forgot password?</a>
+  </p>
 </main>
 {% endblock %}
