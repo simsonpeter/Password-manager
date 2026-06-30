@@ -36,7 +36,7 @@ def auth_required(f):
 def register():
     data = request.get_json(silent=True) or {}
     email = (data.get("email") or "").strip()
-    password = data.get("password") or ""
+    password = (data.get("password") or "").strip()
 
     try:
         user = db.create_user(email, password)
@@ -51,7 +51,10 @@ def register():
 def login():
     data = request.get_json(silent=True) or {}
     email = (data.get("email") or "").strip()
-    password = data.get("password") or ""
+    password = (data.get("password") or "").strip()
+
+    if not email or not password:
+        return jsonify({"error": "Email and password are required."}), 400
 
     user = db.authenticate_user(email, password)
     if not user:

@@ -20,7 +20,13 @@ def create_app() -> Flask:
 
     CORS(
         app,
-        resources={r"/api/*": {"origins": [o.strip() for o in origins if o.strip()]}},
+        resources={
+            r"/api/*": {
+                "origins": [o.strip() for o in origins if o.strip()],
+                "allow_headers": ["Content-Type", "Authorization"],
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            }
+        },
         supports_credentials=False,
     )
 
@@ -32,7 +38,13 @@ def create_app() -> Flask:
 
     @app.get("/api/health")
     def health():
-        return jsonify({"ok": True, "service": "gate-port-codes"})
+        return jsonify(
+            {
+                "ok": True,
+                "service": "gate-port-codes",
+                "database": "postgres" if db.using_postgres() else "sqlite",
+            }
+        )
 
     @app.route("/", defaults={"path": "index.html"})
     @app.route("/<path:path>")

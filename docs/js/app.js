@@ -5,6 +5,7 @@
   let currentEmail = "";
 
   const screens = {
+    loading: document.getElementById("screen-loading"),
     login: document.getElementById("screen-login"),
     register: document.getElementById("screen-register"),
     app: document.getElementById("screen-app"),
@@ -100,6 +101,14 @@
       await loadEntries();
     } catch (err) {
       showToast(err.message || "Could not load codes");
+    }
+  }
+
+  function prefillLoginEmail() {
+    const last = CloudApi.getLastEmail();
+    const loginEmail = document.getElementById("login-email");
+    if (loginEmail && last && !loginEmail.value) {
+      loginEmail.value = last;
     }
   }
 
@@ -282,32 +291,49 @@
 
   document.getElementById("login-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
     const email = document.getElementById("login-email").value.trim();
     const password = document.getElementById("login-password").value;
+    if (!email || !password) return showToast("Enter email and password");
+    btn.disabled = true;
     try {
+      CloudApi.clearSession();
       const data = await CloudApi.login(email, password);
       CloudApi.setSession(data.token, data.email);
       await enterApp(data.email);
       showToast("Signed in");
     } catch (err) {
       showToast(err.message || "Login failed");
+    } finally {
+      btn.disabled = false;
     }
   });
 
   document.getElementById("register-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
     const email = document.getElementById("register-email").value.trim();
     const password = document.getElementById("register-password").value;
     const confirm = document.getElementById("register-confirm").value;
     if (password.length < 6) return showToast("Password: min 6 characters");
     if (password !== confirm) return showToast("Passwords do not match");
+    btn.disabled = true;
     try {
+      CloudApi.clearSession();
       const data = await CloudApi.register(email, password);
       CloudApi.setSession(data.token, data.email);
       await enterApp(data.email);
       showToast("Account created");
     } catch (err) {
-      showToast(err.message || "Registration failed");
+      if (err.message === "Email already registered.") {
+        showToast("Account exists — use Sign in");
+        document.getElementById("login-email").value = email;
+        showScreen("login");
+      } else {
+        showToast(err.message || "Registration failed");
+      }
+    } finally {
+      btn.disabled = false;
     }
   });
 
@@ -354,10 +380,12 @@
   searchInput?.addEventListener("input", applySearch);
 
   document.getElementById("btn-logout")?.addEventListener("click", () => {
+    const email = currentEmail || CloudApi.getLastEmail();
     CloudApi.clearSession();
     entries = [];
     currentEmail = "";
     document.getElementById("login-password").value = "";
+    if (email) document.getElementById("login-email").value = email;
     showScreen("login");
     showToast("Signed out");
   });
@@ -392,9 +420,14 @@
   codesContainer.appendChild(createCodeRow());
   renumberRows();
 
-  tryAutoLogin().then((ok) => {
-    if (!ok) showScreen("login");
-  });
+  (async function init() {
+    showScreen("loading");
+    const ok = await tryAutoLogin();
+    if (!ok) {
+      prefillLoginEmail();
+      showScreen("login");
+    }
+  })();
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {});

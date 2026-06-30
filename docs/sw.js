@@ -1,4 +1,4 @@
-const CACHE = "gate-codes-v3";
+const CACHE = "gate-codes-v4";
 const ASSETS = [
   "./",
   "./index.html",

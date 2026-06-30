@@ -36,6 +36,8 @@ Or use the Render URL directly in your browser — app + API work on the same li
 
 ## Notes
 
-- Free Render sleeps after 15 min idle — first open may take ~30 seconds.
+- Free Render sleeps after 15 min idle — first open may take ~30 seconds. Wait and try again.
 - Same email/password works on every device.
 - Change password in ⚙️ settings inside the app.
+- **Use Sign in** after you already registered (not Create account again).
+- After updating the app, sync your Render Blueprint once to add the free database (keeps accounts safe).
