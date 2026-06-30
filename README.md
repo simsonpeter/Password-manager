@@ -1,46 +1,39 @@
-# Gate & Port Code Manager
+# Gate & Port Code Manager (Cloud)
 
-Password-protected web app for client gate and port codes. **Use on your phone — no PC needed.**
+Password-protected gate and port codes with **cloud login**. Use on any phone — codes sync online.
 
-## Live app link
+## Live links
 
-**https://simsonpeter.github.io/Password-manager/**
+| Link | What it is |
+|------|------------|
+| https://simsonpeter.github.io/Password-manager/ | Phone app (GitHub Pages) |
+| https://gate-port-codes.onrender.com | App + cloud API together (after Render setup) |
 
-If you see **404** or **“cannot publish”**, read **[PUBLISH.md](PUBLISH.md)** — fix takes about 2 minutes.
+**First time?** Deploy the cloud server: **[CLOUD_SETUP.md](CLOUD_SETUP.md)** (~5 min on your phone).
 
----
+## How it works
 
-## Publish the site (one-time)
-
-1. GitHub repo → **Settings** → **Pages**
-2. **Source:** Deploy from a branch
-3. **Branch:** `main` · **Folder:** `/docs`
-4. **Save** — wait 1–3 minutes
-
-Repo must be **Public** (free GitHub Pages).
-
-Full help: **[PUBLISH.md](PUBLISH.md)**
-
----
-
-## Use on your phone
-
-1. Open the live link above
-2. **First time:** create app password (6+ characters)
-3. **Later:** enter password to unlock
-4. Add **name** + **codes** (1st, 2nd, 3rd — tap **+ Add another code**)
-5. **Add to Home Screen** for an app icon (optional)
-
-Data is **encrypted on your phone**. Use **Download backup** and save the file (Drive, email, etc.).
-
----
+1. **Create account** with email + password
+2. **Sign in** on any device
+3. **Codes tab** — list, search, edit, share, copy
+4. **Add tab** — add new names and codes (saved to cloud)
 
 ## Features
 
-- App password lock
-- Many names, many codes per name
-- Search, copy, notes, edit, delete
-- Change password
-- Backup / restore
-- Forgot password recovery (backup restore or start over)
-- Works offline after first visit
+- Cloud account login (email + password)
+- All codes stored in cloud database
+- Multiple names, multiple codes per name
+- Works on phone, tablet, any browser
+- Edit, share, copy, delete
+- Change account password in settings
+
+## For developers
+
+```bash
+pip install -r requirements.txt
+python run.py
+```
+
+Open http://localhost:5000 — serves app + API.
+
+Deploy to Render with the included `render.yaml`.

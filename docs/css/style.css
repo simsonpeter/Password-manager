@@ -221,6 +221,13 @@ body {
   font-weight: 600;
 }
 
+.user-email {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
 .brand-icon { font-size: 1.4rem; }
 
 .topbar-actions {

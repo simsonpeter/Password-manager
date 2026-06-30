@@ -1,37 +1,50 @@
 import os
-import secrets
+from pathlib import Path
 
-from flask import Flask
-from werkzeug.security import check_password_hash, generate_password_hash
+from flask import Flask, jsonify, send_from_directory
+from flask_cors import CORS
 
 from app import database as db
 
+DOCS_DIR = Path(__file__).resolve().parent.parent / "docs"
+
 
 def create_app() -> Flask:
-    app = Flask(__name__, template_folder="templates", static_folder="static")
-    app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
-    app.config["SESSION_COOKIE_HTTPONLY"] = True
-    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-    app.config["PERMANENT_SESSION_LIFETIME"] = 60 * 60 * 8  # 8 hours
+    app = Flask(__name__)
+    app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
+
+    origins = os.environ.get(
+        "CORS_ORIGINS",
+        "https://simsonpeter.github.io,http://localhost:5000,http://127.0.0.1:5000",
+    ).split(",")
+
+    CORS(
+        app,
+        resources={r"/api/*": {"origins": [o.strip() for o in origins if o.strip()]}},
+        supports_credentials=False,
+    )
 
     db.init_db()
 
-    from app.routes import bp
+    from app.api_routes import api_bp
 
-    app.register_blueprint(bp)
+    app.register_blueprint(api_bp)
+
+    @app.get("/api/health")
+    def health():
+        return jsonify({"ok": True, "service": "gate-port-codes"})
+
+    @app.route("/", defaults={"path": "index.html"})
+    @app.route("/<path:path>")
+    def serve_docs(path):
+        if path.startswith("api/"):
+            return jsonify({"error": "Not found."}), 404
+        target = DOCS_DIR / path
+        if target.is_file():
+            return send_from_directory(DOCS_DIR, path)
+        index = DOCS_DIR / "index.html"
+        if index.is_file():
+            return send_from_directory(DOCS_DIR, "index.html")
+        return jsonify({"error": "Frontend not found."}), 404
+
     return app
-
-
-def verify_app_password(password: str) -> bool:
-    stored = db.get_setting("app_password_hash")
-    if not stored:
-        return False
-    return check_password_hash(stored, password)
-
-
-def set_app_password(password: str) -> None:
-    db.set_setting("app_password_hash", generate_password_hash(password))
-
-
-def clear_app_password() -> None:
-    db.delete_setting("app_password_hash")

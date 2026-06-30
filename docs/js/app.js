@@ -1,14 +1,12 @@
 (function () {
   const ORDINALS = ["1st", "2nd", "3rd"];
 
-  let sessionPassword = null;
   let entries = [];
-  let nextId = 1;
+  let currentEmail = "";
 
   const screens = {
-    setup: document.getElementById("screen-setup"),
     login: document.getElementById("screen-login"),
-    forgot: document.getElementById("screen-forgot"),
+    register: document.getElementById("screen-register"),
     app: document.getElementById("screen-app"),
   };
 
@@ -43,7 +41,7 @@
     t.textContent = msg;
     t.classList.add("show");
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => t.classList.remove("show"), 2200);
+    showToast._t = setTimeout(() => t.classList.remove("show"), 2500);
   }
 
   function escapeHtml(s) {
@@ -64,9 +62,7 @@
     entry.codes.forEach((code, i) => {
       lines.push(`${ordinal(i + 1)} code: ${code}`);
     });
-    if (entry.notes) {
-      lines.push("", `Notes: ${entry.notes}`);
-    }
+    if (entry.notes) lines.push("", `Notes: ${entry.notes}`);
     return lines.join("\n");
   }
 
@@ -89,29 +85,34 @@
     }
   }
 
-  async function persist() {
-    if (!sessionPassword) return;
-    const bundle = await CryptoUtil.encrypt(sessionPassword, { entries, nextId });
-    Storage.saveBundle(bundle);
+  async function loadEntries() {
+    entries = await CloudApi.listEntries();
+    renderList();
   }
 
-  async function unlock(password) {
-    const bundle = Storage.loadBundle();
-    if (!bundle) return false;
-    const data = await CryptoUtil.decrypt(password, bundle);
-    if (!data || !Array.isArray(data.entries)) return false;
-    sessionPassword = password;
-    entries = data.entries;
-    nextId = data.nextId || Math.max(0, ...entries.map((e) => e.id)) + 1;
-    return true;
+  async function enterApp(email) {
+    currentEmail = email;
+    document.getElementById("user-email").textContent = email;
+    showScreen("app");
+    switchTab("codes");
+    resetForm();
+    try {
+      await loadEntries();
+    } catch (err) {
+      showToast(err.message || "Could not load codes");
+    }
   }
 
-  async function initialSetup(password) {
-    sessionPassword = password;
-    entries = [];
-    nextId = 1;
-    await persist();
-    return true;
+  async function tryAutoLogin() {
+    if (!CloudApi.getToken()) return false;
+    try {
+      const user = await CloudApi.me();
+      await enterApp(user.email);
+      return true;
+    } catch {
+      CloudApi.clearSession();
+      return false;
+    }
   }
 
   const codesContainer = document.getElementById("codes-container");
@@ -227,10 +228,14 @@
       card.querySelector(".btn-share").addEventListener("click", () => shareEntry(entry));
       card.querySelector(".btn-delete").addEventListener("click", async () => {
         if (!confirm("Delete this entry?")) return;
-        entries = entries.filter((e) => e.id !== entry.id);
-        await persist();
-        renderList();
-        showToast("Deleted");
+        try {
+          await CloudApi.deleteEntry(entry.id);
+          entries = entries.filter((e) => e.id !== entry.id);
+          renderList();
+          showToast("Deleted");
+        } catch (err) {
+          showToast(err.message);
+        }
       });
       card.querySelectorAll(".btn-copy").forEach((btn) => {
         btn.addEventListener("click", async () => {
@@ -263,95 +268,47 @@
     btn.addEventListener("click", () => {
       const tab = btn.dataset.tab;
       switchTab(tab);
-      if (tab === "add" && !entryIdInput.value) {
-        resetForm();
-      }
+      if (tab === "add" && !entryIdInput.value) resetForm();
     });
   });
 
-  document.getElementById("setup-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const p1 = document.getElementById("setup-password").value;
-    const p2 = document.getElementById("setup-confirm").value;
-    if (p1.length < 6) return showToast("Password: min 6 characters");
-    if (p1 !== p2) return showToast("Passwords do not match");
-    await initialSetup(p1);
-    showScreen("app");
-    switchTab("codes");
-    resetForm();
-    renderList();
-    showToast("Ready — your data is encrypted on this device");
+  document.getElementById("btn-go-register")?.addEventListener("click", () => {
+    showScreen("register");
+  });
+
+  document.getElementById("btn-go-login")?.addEventListener("click", () => {
+    showScreen("login");
   });
 
   document.getElementById("login-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const p = document.getElementById("login-password").value;
-    const ok = await unlock(p);
-    if (!ok) return showToast("Wrong password");
-    showScreen("app");
-    switchTab("codes");
-    resetForm();
-    renderList();
-  });
-
-  document.getElementById("btn-forgot-password")?.addEventListener("click", () => {
-    document.getElementById("forgot-restore-form")?.reset();
-    showScreen("forgot");
-  });
-
-  document.getElementById("btn-back-login")?.addEventListener("click", () => {
-    showScreen("login");
-  });
-
-  async function restoreBackup(bundle, password) {
-    if (!bundle?.salt || !bundle?.data) throw new Error("Invalid file");
-    const data = await CryptoUtil.decrypt(password, bundle);
-    if (!data) throw new Error("Wrong password");
-    if (
-      Storage.hasData() &&
-      !confirm("Replace all data on this device with the backup?")
-    ) {
-      return false;
-    }
-    Storage.saveBundle(bundle);
-    await unlock(password);
-    showScreen("app");
-    switchTab("codes");
-    resetForm();
-    renderList();
-    showToast("Backup restored");
-    return true;
-  }
-
-  document.getElementById("forgot-restore-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const file = document.getElementById("forgot-restore-file").files?.[0];
-    const password = document.getElementById("forgot-restore-password").value;
-    if (!file) return showToast("Choose a backup file");
+    const email = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-password").value;
     try {
-      const bundle = JSON.parse(await file.text());
-      const ok = await restoreBackup(bundle, password);
-      if (ok === false) return;
-      if (!ok) showToast("Wrong password for backup");
+      const data = await CloudApi.login(email, password);
+      CloudApi.setSession(data.token, data.email);
+      await enterApp(data.email);
+      showToast("Signed in");
     } catch (err) {
-      if (err.message === "Wrong password") return showToast("Wrong password for backup");
-      showToast("Import failed");
+      showToast(err.message || "Login failed");
     }
   });
 
-  document.getElementById("btn-start-over")?.addEventListener("click", () => {
-    const confirmed = confirm(
-      "This will permanently delete all codes on this device and let you create a new password.\n\nThis cannot be undone unless you have a backup file. Continue?"
-    );
-    if (!confirmed) return;
-    Storage.clear();
-    sessionPassword = null;
-    entries = [];
-    document.getElementById("login-password").value = "";
-    document.getElementById("setup-form")?.reset();
-    document.getElementById("forgot-restore-form")?.reset();
-    showScreen("setup");
-    showToast("App reset — create a new password");
+  document.getElementById("register-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("register-email").value.trim();
+    const password = document.getElementById("register-password").value;
+    const confirm = document.getElementById("register-confirm").value;
+    if (password.length < 6) return showToast("Password: min 6 characters");
+    if (password !== confirm) return showToast("Passwords do not match");
+    try {
+      const data = await CloudApi.register(email, password);
+      CloudApi.setSession(data.token, data.email);
+      await enterApp(data.email);
+      showToast("Account created");
+    } catch (err) {
+      showToast(err.message || "Registration failed");
+    }
   });
 
   document.getElementById("btn-add-code")?.addEventListener("click", () => {
@@ -373,28 +330,36 @@
     if (!name) return showToast("Name is required");
 
     const id = entryIdInput.value ? Number(entryIdInput.value) : null;
-    if (id) {
-      const idx = entries.findIndex((x) => x.id === id);
-      if (idx >= 0) entries[idx] = { id, name, codes, notes };
-      showToast("Updated");
-    } else {
-      entries.push({ id: nextId++, name, codes, notes });
-      showToast("Saved");
+    const payload = { name, codes, notes };
+
+    try {
+      if (id) {
+        const updated = await CloudApi.updateEntry(id, payload);
+        const idx = entries.findIndex((x) => x.id === id);
+        if (idx >= 0) entries[idx] = updated;
+        showToast("Updated in cloud");
+      } else {
+        const created = await CloudApi.createEntry(payload);
+        entries.push(created);
+        showToast("Saved to cloud");
+      }
+      resetForm();
+      renderList();
+      switchTab("codes");
+    } catch (err) {
+      showToast(err.message || "Save failed");
     }
-    await persist();
-    resetForm();
-    renderList();
-    switchTab("codes");
   });
 
   searchInput?.addEventListener("input", applySearch);
 
   document.getElementById("btn-logout")?.addEventListener("click", () => {
-    sessionPassword = null;
+    CloudApi.clearSession();
     entries = [];
+    currentEmail = "";
     document.getElementById("login-password").value = "";
     showScreen("login");
-    showToast("Logged out");
+    showToast("Signed out");
   });
 
   const pwdDialog = document.getElementById("password-dialog");
@@ -414,64 +379,22 @@
     const newP = document.getElementById("new-password").value;
     const confirm = document.getElementById("confirm-password").value;
 
-    if (current !== sessionPassword) {
-      errEl.textContent = "Current password is wrong";
-      errEl.classList.remove("hidden");
-      return;
-    }
-    if (newP.length < 6) {
-      errEl.textContent = "New password: min 6 characters";
-      errEl.classList.remove("hidden");
-      return;
-    }
-    if (newP !== confirm) {
-      errEl.textContent = "New passwords do not match";
-      errEl.classList.remove("hidden");
-      return;
-    }
-    sessionPassword = newP;
-    await persist();
-    pwdDialog.close();
-    showToast("Password changed");
-  });
-
-  document.getElementById("btn-export")?.addEventListener("click", () => {
-    const bundle = Storage.loadBundle();
-    if (!bundle) return showToast("Nothing to export");
-    const blob = new Blob([JSON.stringify(bundle)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "gate-port-codes-backup.json";
-    a.click();
-    URL.revokeObjectURL(a.href);
-    showToast("Backup downloaded");
-  });
-
-  document.getElementById("import-file")?.addEventListener("change", async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
     try {
-      const bundle = JSON.parse(await file.text());
-      const testPass = prompt("Enter the password for this backup file:");
-      if (!testPass) return;
-      const ok = await restoreBackup(bundle, testPass);
-      if (ok === false) return;
-      if (!ok) showToast("Wrong password for backup");
+      await CloudApi.changePassword(current, newP, confirm);
+      pwdDialog.close();
+      showToast("Password changed");
     } catch (err) {
-      if (err.message === "Wrong password") return showToast("Wrong password for backup");
-      showToast("Import failed");
+      errEl.textContent = err.message;
+      errEl.classList.remove("hidden");
     }
-    e.target.value = "";
   });
 
   codesContainer.appendChild(createCodeRow());
   renumberRows();
 
-  if (Storage.hasData()) {
-    showScreen("login");
-  } else {
-    showScreen("setup");
-  }
+  tryAutoLogin().then((ok) => {
+    if (!ok) showScreen("login");
+  });
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {});

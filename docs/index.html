@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0f1419">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="Password-protected gate and port codes for your clients">
+  <meta name="description" content="Cloud gate and port codes — login from any device">
   <title>Gate &amp; Port Codes</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -15,69 +15,44 @@
 </head>
 <body>
 
-  <!-- SETUP -->
-  <section id="screen-setup" class="screen auth-page">
-    <main class="auth-card">
-      <div class="auth-icon" aria-hidden="true">🔐</div>
-      <h1>Gate &amp; Port Codes</h1>
-      <p class="auth-subtitle">Create a password. Your codes are encrypted and saved on this phone.</p>
-      <form id="setup-form" class="auth-form">
-        <label for="setup-password">App password</label>
-        <input type="password" id="setup-password" required minlength="6" autocomplete="new-password" placeholder="At least 6 characters">
-        <label for="setup-confirm">Confirm password</label>
-        <input type="password" id="setup-confirm" required minlength="6" autocomplete="new-password" placeholder="Repeat password">
-        <button type="submit" class="btn btn-primary btn-block">Create &amp; start</button>
-      </form>
-    </main>
-  </section>
-
   <!-- LOGIN -->
-  <section id="screen-login" class="screen auth-page hidden">
+  <section id="screen-login" class="screen auth-page">
     <main class="auth-card">
-      <div class="auth-icon" aria-hidden="true">🔒</div>
-      <h1>Unlock</h1>
-      <p class="auth-subtitle">Enter your app password.</p>
+      <div class="auth-icon" aria-hidden="true">☁️</div>
+      <h1>Cloud Login</h1>
+      <p class="auth-subtitle">Sign in to access your codes from any phone.</p>
       <form id="login-form" class="auth-form">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" required autocomplete="email" placeholder="your@email.com">
         <label for="login-password">Password</label>
         <input type="password" id="login-password" required autocomplete="current-password" placeholder="Your password">
-        <button type="submit" class="btn btn-primary btn-block">Open</button>
+        <button type="submit" class="btn btn-primary btn-block">Sign in</button>
       </form>
       <p class="auth-footer">
-        <button type="button" class="auth-link" id="btn-forgot-password">Forgot password?</button>
+        No account?
+        <button type="button" class="auth-link" id="btn-go-register">Create account</button>
       </p>
     </main>
   </section>
 
-  <!-- FORGOT PASSWORD -->
-  <section id="screen-forgot" class="screen auth-page hidden">
-    <main class="auth-card recovery-card">
-      <div class="auth-icon" aria-hidden="true">🔑</div>
-      <h1>Forgot password?</h1>
-      <p class="auth-subtitle">There is no email reset. Your password encrypts your data on this device.</p>
-
-      <div class="recovery-section">
-        <h2 class="recovery-heading">Have a backup file?</h2>
-        <ol class="recovery-steps">
-          <li>Choose your <strong>gate-port-codes-backup.json</strong> file.</li>
-          <li>Enter the password that was used when that backup was created.</li>
-        </ol>
-        <form id="forgot-restore-form" class="auth-form">
-          <label for="forgot-restore-file">Backup file</label>
-          <input type="file" id="forgot-restore-file" accept=".json,application/json" required>
-          <label for="forgot-restore-password">Backup password</label>
-          <input type="password" id="forgot-restore-password" required autocomplete="current-password" placeholder="Password used for this backup">
-          <button type="submit" class="btn btn-primary btn-block">Restore backup</button>
-        </form>
-      </div>
-
-      <div class="recovery-section">
-        <h2 class="recovery-heading">No backup?</h2>
-        <p class="recovery-callout recovery-callout-warn">Without your password or a backup, encrypted codes on this device cannot be recovered.</p>
-        <button type="button" class="btn btn-secondary btn-block" id="btn-start-over">Start over (clear all data)</button>
-      </div>
-
+  <!-- REGISTER -->
+  <section id="screen-register" class="screen auth-page hidden">
+    <main class="auth-card">
+      <div class="auth-icon" aria-hidden="true">✨</div>
+      <h1>Create account</h1>
+      <p class="auth-subtitle">Your codes will be saved in the cloud.</p>
+      <form id="register-form" class="auth-form">
+        <label for="register-email">Email</label>
+        <input type="email" id="register-email" required autocomplete="email" placeholder="your@email.com">
+        <label for="register-password">Password</label>
+        <input type="password" id="register-password" required minlength="6" autocomplete="new-password" placeholder="At least 6 characters">
+        <label for="register-confirm">Confirm password</label>
+        <input type="password" id="register-confirm" required minlength="6" autocomplete="new-password" placeholder="Repeat password">
+        <button type="submit" class="btn btn-primary btn-block">Create account</button>
+      </form>
       <p class="auth-footer">
-        <button type="button" class="auth-link" id="btn-back-login">← Back to unlock</button>
+        Already have an account?
+        <button type="button" class="auth-link" id="btn-go-login">Sign in</button>
       </p>
     </main>
   </section>
@@ -87,7 +62,10 @@
     <header class="topbar">
       <div class="topbar-brand">
         <span class="brand-icon" aria-hidden="true">🚪</span>
-        <h1>Gate &amp; Port Codes</h1>
+        <div>
+          <h1>Gate &amp; Port Codes</h1>
+          <p class="user-email" id="user-email"></p>
+        </div>
       </div>
       <div class="topbar-actions">
         <button type="button" class="btn btn-ghost btn-sm" id="btn-settings" title="Change password">⚙️</button>
@@ -102,20 +80,13 @@
         <span class="badge" id="entry-count">0</span>
       </div>
       <div id="entries-list" class="entries-list tab-scroll"></div>
-      <div class="backup-bar">
-        <button type="button" class="btn btn-secondary btn-sm" id="btn-export">Backup</button>
-        <label class="btn btn-secondary btn-sm btn-file">
-          Restore
-          <input type="file" id="import-file" accept=".json,application/json" hidden>
-        </label>
-      </div>
     </div>
 
     <!-- TAB: ADD -->
     <div id="tab-add" class="tab-panel">
       <div class="tab-scroll panel-form-inner">
         <h2 id="form-title">Add new</h2>
-        <p class="panel-hint">Name + codes (1st, 2nd, 3rd…). Tap Save when done.</p>
+        <p class="panel-hint">Name + codes (1st, 2nd, 3rd…). Saved to cloud when you tap Save.</p>
         <form id="entry-form">
           <input type="hidden" id="entry-id" value="">
           <div class="field">
@@ -132,7 +103,7 @@
             <textarea id="entry-notes" rows="3" placeholder="Location, directions…"></textarea>
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary btn-block" id="btn-save">Save</button>
+            <button type="submit" class="btn btn-primary btn-block" id="btn-save">Save to cloud</button>
             <button type="button" class="btn btn-ghost btn-block hidden" id="btn-cancel">Cancel edit</button>
           </div>
         </form>
@@ -176,8 +147,8 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/crypto.js"></script>
-  <script src="js/storage.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

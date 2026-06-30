@@ -1,10 +1,10 @@
-const CACHE = "gate-codes-v2";
+const CACHE = "gate-codes-v3";
 const ASSETS = [
   "./",
   "./index.html",
   "./css/style.css",
-  "./js/crypto.js",
-  "./js/storage.js",
+  "./js/config.js",
+  "./js/api.js",
   "./js/app.js",
   "./manifest.json",
   "./icon.svg",
@@ -26,6 +26,9 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
+  const url = new URL(e.request.url);
+  if (url.pathname.includes("/api/")) return;
+
   e.respondWith(
     caches.match(e.request).then((cached) => {
       const fetched = fetch(e.request)
