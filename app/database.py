@@ -316,6 +316,35 @@ def delete_entry(user_id: int, entry_id: int) -> bool:
         return cur.rowcount > 0
 
 
+def delete_all_entries(user_id: int) -> int:
+    with get_connection() as conn:
+        cur = _execute(conn, "DELETE FROM entries WHERE user_id = ?", (user_id,))
+        return cur.rowcount
+
+
+def import_entries(user_id: int, items: list[dict], replace: bool = False) -> list[dict]:
+    with get_connection() as conn:
+        if replace:
+            _execute(conn, "DELETE FROM entries WHERE user_id = ?", (user_id,))
+
+        for item in items:
+            name = (item.get("name") or "").strip()
+            if not name:
+                continue
+            codes = item.get("codes") or []
+            if not isinstance(codes, list):
+                codes = []
+            notes = (item.get("notes") or "").strip()
+            codes_json = json.dumps([str(c) for c in codes if str(c).strip()])
+            _execute(
+                conn,
+                "INSERT INTO entries (user_id, name, codes, notes) VALUES (?, ?, ?, ?)",
+                (user_id, name, codes_json, notes),
+            )
+
+    return list_entries(user_id)
+
+
 def _row_to_user(row) -> dict:
     created = row["created_at"]
     if hasattr(created, "isoformat"):

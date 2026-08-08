@@ -1,5 +1,14 @@
 (function () {
   const ORDINALS = ["1st", "2nd", "3rd"];
+  const THEME_KEY = "app_theme";
+  const THEMES = ["dark", "light", "ocean", "forest"];
+  const THEME_COLORS = {
+    dark: "#0f1419",
+    light: "#f0f4f8",
+    ocean: "#0a1628",
+    forest: "#0d1a0f",
+  };
+  const BACKUP_VERSION = 1;
 
   let entries = [];
   let currentEmail = "";
@@ -43,6 +52,108 @@
     t.classList.add("show");
     clearTimeout(showToast._t);
     showToast._t = setTimeout(() => t.classList.remove("show"), 2500);
+  }
+
+  function getTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
+    return THEMES.includes(saved) ? saved : "dark";
+  }
+
+  function applyTheme(name) {
+    const theme = THEMES.includes(name) ? name : "dark";
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem(THEME_KEY, theme);
+    const meta = document.getElementById("meta-theme-color");
+    if (meta) meta.content = THEME_COLORS[theme] || THEME_COLORS.dark;
+    document.querySelectorAll(".theme-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.theme === theme);
+    });
+  }
+
+  function buildBackupPayload(entryList) {
+    return {
+      version: BACKUP_VERSION,
+      exportedAt: new Date().toISOString(),
+      email: currentEmail || CloudApi.getEmail() || "",
+      entries: entryList.map(({ name, codes, notes }) => ({
+        name,
+        codes,
+        notes: notes || "",
+      })),
+    };
+  }
+
+  function parseBackupFile(data) {
+    let parsed = data;
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+    if (parsed && Array.isArray(parsed.entries)) {
+      return parsed.entries;
+    }
+    throw new Error("Invalid backup file format.");
+  }
+
+  function downloadBackup() {
+    const payload = buildBackupPayload(entries);
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const date = new Date().toISOString().slice(0, 10);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `gate-port-codes-backup-${date}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast("Backup downloaded");
+  }
+
+  async function importBackup(file) {
+    if (!file) return;
+    const text = await file.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error("Could not read backup file.");
+    }
+
+    const items = parseBackupFile(data).filter((e) => e && (e.name || "").trim());
+    if (!items.length) throw new Error("No entries found in backup.");
+
+    let replace = false;
+    if (entries.length) {
+      const merge = confirm(
+        `Import ${items.length} entries?\n\nOK = merge with existing cloud entries\nCancel = replace all existing entries`
+      );
+      if (merge) {
+        replace = false;
+      } else if (
+        !confirm("Replace ALL existing cloud entries with this backup? This cannot be undone.")
+      ) {
+        return;
+      } else {
+        replace = true;
+      }
+    } else if (!confirm(`Import ${items.length} entries to cloud?`)) {
+      return;
+    }
+
+    const result = await CloudApi.importEntries(items, replace);
+    entries = result.entries || [];
+    renderList();
+    showToast(`Imported ${result.imported} entries to cloud`);
+  }
+
+  async function handleBackupImport(input) {
+    const file = input.files?.[0];
+    if (!file) return;
+    input.value = "";
+    try {
+      await importBackup(file);
+    } catch (err) {
+      showToast(err.message || "Import failed");
+    }
   }
 
   function escapeHtml(s) {
@@ -390,17 +501,31 @@
     showToast("Signed out");
   });
 
-  const pwdDialog = document.getElementById("password-dialog");
+  const pwdDialog = document.getElementById("settings-dialog");
   document.getElementById("btn-settings")?.addEventListener("click", () => {
-    document.getElementById("password-form").reset();
+    document.getElementById("settings-form").reset();
     document.getElementById("password-error").classList.add("hidden");
+    applyTheme(getTheme());
     pwdDialog.showModal();
   });
-  document.getElementById("btn-close-dialog")?.addEventListener("click", () =>
+  document.getElementById("btn-close-settings")?.addEventListener("click", () =>
     pwdDialog.close()
   );
 
-  document.getElementById("password-form")?.addEventListener("submit", async (e) => {
+  document.querySelectorAll(".theme-btn").forEach((btn) => {
+    btn.addEventListener("click", () => applyTheme(btn.dataset.theme));
+  });
+
+  document.getElementById("btn-backup-download")?.addEventListener("click", downloadBackup);
+  document.getElementById("btn-settings-download")?.addEventListener("click", downloadBackup);
+  document.getElementById("backup-file-input")?.addEventListener("change", (e) =>
+    handleBackupImport(e.target)
+  );
+  document.getElementById("settings-backup-input")?.addEventListener("change", (e) =>
+    handleBackupImport(e.target)
+  );
+
+  document.getElementById("settings-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const errEl = document.getElementById("password-error");
     const current = document.getElementById("current-password").value;
@@ -419,6 +544,7 @@
 
   codesContainer.appendChild(createCodeRow());
   renumberRows();
+  applyTheme(getTheme());
 
   (async function init() {
     showScreen("loading");

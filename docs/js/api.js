@@ -130,6 +130,8 @@ const CloudApi = (() => {
     createEntry: (payload) => request("POST", "/entries", payload),
     updateEntry: (id, payload) => request("PUT", `/entries/${id}`, payload),
     deleteEntry: (id) => request("DELETE", `/entries/${id}`),
+    importEntries: (entries, replace = false) =>
+      request("POST", "/entries/import", { entries, replace }),
     health: () => authRequest("GET", "/health"),
   };
 })();

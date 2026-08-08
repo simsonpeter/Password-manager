@@ -142,3 +142,39 @@ def delete_entry(entry_id: int):
     if not db.delete_entry(request.current_user["id"], entry_id):
         return jsonify({"error": "Not found."}), 404
     return jsonify({"ok": True})
+
+
+@api_bp.post("/entries/import")
+@auth_required
+def import_entries():
+    data = request.get_json(silent=True) or {}
+    items = data.get("entries")
+    replace = bool(data.get("replace", False))
+
+    if not isinstance(items, list):
+        return jsonify({"error": "entries must be a list."}), 400
+
+    valid = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        name = (item.get("name") or "").strip()
+        if not name:
+            continue
+        codes = item.get("codes") or []
+        if not isinstance(codes, list):
+            return jsonify({"error": "Each entry codes must be a list."}), 400
+        valid.append(
+            {
+                "name": name,
+                "codes": [str(c) for c in codes],
+                "notes": (item.get("notes") or "").strip(),
+            }
+        )
+
+    if not valid:
+        return jsonify({"error": "No valid entries to import."}), 400
+
+    user_id = request.current_user["id"]
+    entries = db.import_entries(user_id, valid, replace=replace)
+    return jsonify({"imported": len(valid), "entries": entries})
