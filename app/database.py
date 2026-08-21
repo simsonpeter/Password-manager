@@ -1,13 +1,18 @@
 import json
+import logging
 import os
 import re
 import sqlite3
+import threading
+import time
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import jwt
 from werkzeug.security import check_password_hash, generate_password_hash
+
+logger = logging.getLogger(__name__)
 
 DB_PATH = Path(
     os.environ.get("DATABASE_PATH", Path(__file__).resolve().parent.parent / "data" / "codes.db")
@@ -67,18 +72,26 @@ CREATE INDEX IF NOT EXISTS idx_entries_user ON entries(user_id);
 CREATE INDEX IF NOT EXISTS idx_entries_name ON entries(name);
 """
 
+_db_ready = False
+_db_lock = threading.Lock()
+
 
 def using_postgres() -> bool:
     return bool(DATABASE_URL)
 
 
-def init_db() -> None:
+def _postgres_statements() -> list[str]:
+    return [stmt.strip() for stmt in POSTGRES_SCHEMA.split(";") if stmt.strip()]
+
+
+def _init_db_once() -> None:
     if using_postgres():
         import psycopg2
 
-        with psycopg2.connect(DATABASE_URL) as conn:
+        with psycopg2.connect(DATABASE_URL, connect_timeout=10) as conn:
             with conn.cursor() as cur:
-                cur.execute(POSTGRES_SCHEMA)
+                for stmt in _postgres_statements():
+                    cur.execute(stmt)
             conn.commit()
         return
 
@@ -87,13 +100,55 @@ def init_db() -> None:
         conn.executescript(SQLITE_SCHEMA)
 
 
+def init_db(max_retries: int = 10, retry_delay: float = 3.0) -> None:
+    last_error: Exception | None = None
+    for attempt in range(max_retries):
+        try:
+            _init_db_once()
+            return
+        except Exception as exc:
+            last_error = exc
+            logger.warning(
+                "Database init attempt %s/%s failed: %s",
+                attempt + 1,
+                max_retries,
+                exc,
+            )
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+    if last_error:
+        raise last_error
+
+
+def ensure_db() -> None:
+    global _db_ready
+    if _db_ready:
+        return
+    with _db_lock:
+        if _db_ready:
+            return
+        init_db()
+        _db_ready = True
+
+
+def check_connection() -> bool:
+    ensure_db()
+    with get_connection() as conn:
+        _execute(conn, "SELECT 1")
+    return True
+
+
 @contextmanager
 def get_connection():
     if using_postgres():
         import psycopg2
         from psycopg2.extras import RealDictCursor
 
-        conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+        conn = psycopg2.connect(
+            DATABASE_URL,
+            cursor_factory=RealDictCursor,
+            connect_timeout=10,
+        )
         try:
             yield conn
             conn.commit()

@@ -30,19 +30,24 @@ def create_app() -> Flask:
         supports_credentials=False,
     )
 
-    db.init_db()
-
     from app.api_routes import api_bp
 
     app.register_blueprint(api_bp)
 
     @app.get("/api/health")
     def health():
+        try:
+            db.check_connection()
+            db_status = "postgres" if db.using_postgres() else "sqlite"
+        except Exception as exc:
+            logger = __import__("logging").getLogger(__name__)
+            logger.warning("Health check database error: %s", exc)
+            db_status = "unavailable"
         return jsonify(
             {
                 "ok": True,
                 "service": "gate-port-codes",
-                "database": "postgres" if db.using_postgres() else "sqlite",
+                "database": db_status,
             }
         )
 

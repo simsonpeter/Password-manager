@@ -46,7 +46,9 @@ const CloudApi = (() => {
           throw new Error(
             res.status === 503 || res.status === 502
               ? "Cloud server is waking up. Wait 30 seconds and try again."
-              : "Server error. Please try again."
+              : res.status === 0
+                ? "Cannot reach cloud server. Check your internet."
+                : "Server error. Please try again."
           );
         }
       }

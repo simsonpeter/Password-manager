@@ -7,6 +7,18 @@ from app import database as db
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 
+@api_bp.before_request
+def ensure_database():
+    if request.method == "OPTIONS":
+        return None
+    try:
+        db.ensure_db()
+    except Exception:
+        return jsonify(
+            {"error": "Cloud database is waking up. Wait 30 seconds and try again."}
+        ), 503
+
+
 def get_bearer_token() -> str | None:
     auth = request.headers.get("Authorization", "")
     if auth.startswith("Bearer "):
