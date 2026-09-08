@@ -208,6 +208,10 @@ p {
   height: 14px;
 }
 
+.auth-panel > .btn-ghost {
+  margin: -0.35rem 0 1.25rem;
+}
+
 .auth-tabs {
   display: flex;
   gap: 1.2rem;
@@ -759,6 +763,45 @@ legend {
 
 .settings h3 {
   font-size: 1.3rem;
+}
+
+.setup-steps {
+  margin: 0 0 1.3rem;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.85rem;
+  color: var(--paper-dim);
+}
+
+.setup-steps a {
+  color: var(--brass-2);
+}
+
+.setup-sql {
+  margin-top: 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+}
+
+.setup-sql .text-link {
+  margin-bottom: 0.4rem;
+}
+
+.setup-sql pre {
+  flex: 1 1 100%;
+  max-height: 9rem;
+  overflow: auto;
+  margin: 0.4rem 0 0;
+  padding: 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-family: var(--font-code);
+  font-size: 0.68rem;
+  line-height: 1.45;
+  color: var(--paper-dim);
+  white-space: pre;
 }
 
 code {

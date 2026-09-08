@@ -5,7 +5,9 @@ const ANON_KEY = "keystone.supabase.anon";
 
 export function readEnvCloud(): CloudConfig | null {
   const url = import.meta.env.VITE_SUPABASE_URL?.trim();
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
+  const anonKey = (
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY
+  )?.trim();
   if (!url || !anonKey || url.includes("YOUR-PROJECT")) return null;
   return { url, anonKey };
 }

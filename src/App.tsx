@@ -10,6 +10,7 @@ import { AuthScreen } from "./screens/AuthScreen";
 import { DetailPane } from "./screens/DetailPane";
 import { EditorSheet } from "./screens/EditorSheet";
 import { SettingsSheet } from "./screens/SettingsSheet";
+import { ConnectSheet } from "./screens/ConnectSheet";
 import { VaultPane } from "./screens/VaultPane";
 
 const api: VaultAPI = createVault();
@@ -33,6 +34,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Entry | null | undefined>(undefined);
   const [settings, setSettings] = useState(false);
+  const [connect, setConnect] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [mobileDetail, setMobileDetail] = useState(false);
 
@@ -159,7 +161,10 @@ export default function App() {
   if (!session) {
     return (
       <>
-        <AuthScreen api={api} onToast={showToast} />
+        <AuthScreen api={api} onToast={showToast} onConnect={() => setConnect(true)} />
+        {connect && (
+          <ConnectSheet onClose={() => setConnect(false)} onToast={showToast} />
+        )}
         <Toast message={toast} />
       </>
     );
@@ -211,8 +216,13 @@ export default function App() {
           onClose={() => setSettings(false)}
           onToast={showToast}
           onSeed={seed}
+          onConnect={() => {
+            setSettings(false);
+            setConnect(true);
+          }}
         />
       )}
+      {connect && <ConnectSheet onClose={() => setConnect(false)} onToast={showToast} />}
       <Toast message={toast} />
     </>
   );

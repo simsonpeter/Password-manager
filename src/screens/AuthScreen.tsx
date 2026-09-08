@@ -7,9 +7,10 @@ type Mode = "signin" | "signup" | "reset";
 type Props = {
   api: VaultAPI;
   onToast: (message: string) => void;
+  onConnect: () => void;
 };
 
-export function AuthScreen({ api, onToast }: Props) {
+export function AuthScreen({ api, onToast, onConnect }: Props) {
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -68,6 +69,11 @@ export function AuthScreen({ api, onToast }: Props) {
         <p className="backend-pill">
           {cloud ? "Synced with Supabase" : "Saved on this device"}
         </p>
+        {!cloud && (
+          <button type="button" className="btn-ghost btn-block" onClick={onConnect}>
+            Connect Supabase
+          </button>
+        )}
         <div className="auth-tabs" role="tablist">
           <button
             type="button"
@@ -138,15 +144,11 @@ export function AuthScreen({ api, onToast }: Props) {
           </button>
         </form>
 
-        {mode === "signin" && (
+        {mode === "signin" && cloud && (
           <p className="auth-foot">
-            {cloud ? (
-              <button type="button" className="text-link" onClick={() => setMode("reset")}>
-                Forgot password?
-              </button>
-            ) : (
-              <span>Connect Supabase later in Settings to sync across phones.</span>
-            )}
+            <button type="button" className="text-link" onClick={() => setMode("reset")}>
+              Forgot password?
+            </button>
           </p>
         )}
         {mode === "reset" && (

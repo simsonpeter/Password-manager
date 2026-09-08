@@ -1,4 +1,4 @@
--- Keystone vault schema
+export const SCHEMA_SQL = `-- Keystone vault schema
 -- Paste this entire file into the Supabase SQL editor and click Run.
 
 create table if not exists public.entries (
@@ -63,3 +63,4 @@ create trigger entries_touch_updated_at
   before update on public.entries
   for each row
   execute function public.touch_updated_at();
+`;

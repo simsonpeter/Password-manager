@@ -1,12 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { CloudIcon, DeviceIcon } from "../components/Icons";
 import { Sheet } from "../components/Sheet";
-import {
-  clearSavedCloudConfig,
-  getCloudConfig,
-  isEnvLocked,
-  saveCloudConfig,
-} from "../lib/config";
+import { clearSavedCloudConfig, isEnvLocked } from "../lib/config";
 import type { VaultAPI } from "../lib/api";
 
 type Props = {
@@ -15,34 +10,16 @@ type Props = {
   onClose: () => void;
   onToast: (message: string) => void;
   onSeed: () => Promise<void>;
+  onConnect: () => void;
 };
 
-export function SettingsSheet({ api, email, onClose, onToast, onSeed }: Props) {
+export function SettingsSheet({ api, email, onClose, onToast, onSeed, onConnect }: Props) {
   const locked = isEnvLocked();
-  const config = getCloudConfig();
-  const [url, setUrl] = useState(config?.url ?? "");
-  const [anonKey, setAnonKey] = useState(config?.anonKey ?? "");
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-
-  async function saveCloud(event: FormEvent) {
-    event.preventDefault();
-    setError("");
-    if (!url.includes("supabase.co") && !url.includes("localhost")) {
-      setError("Use your Supabase project URL.");
-      return;
-    }
-    if (anonKey.length < 20) {
-      setError("Paste the anon public key from Project Settings → API.");
-      return;
-    }
-    saveCloudConfig({ url, anonKey });
-    onToast("Supabase connected. Reloading…");
-    window.setTimeout(() => window.location.reload(), 600);
-  }
 
   function disconnect() {
     clearSavedCloudConfig();
@@ -129,44 +106,16 @@ export function SettingsSheet({ api, email, onClose, onToast, onSeed }: Props) {
 
         <section className="editor">
           <h3>Supabase</h3>
-          <p className="muted">
-            Create a free project, run <code>supabase/schema.sql</code>, then paste the URL and anon
-            key. Codes will sync to any phone you sign in on.
-          </p>
           {locked ? (
             <p className="muted">This build already has cloud credentials baked in.</p>
+          ) : api.kind === "cloud" ? (
+            <button type="button" className="btn-ghost" onClick={disconnect}>
+              Use this device only
+            </button>
           ) : (
-            <form onSubmit={saveCloud}>
-              <label>
-                Project URL
-                <input
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://xxxx.supabase.co"
-                  required
-                />
-              </label>
-              <label>
-                Anon key
-                <textarea
-                  rows={3}
-                  value={anonKey}
-                  onChange={(e) => setAnonKey(e.target.value)}
-                  placeholder="eyJ…"
-                  required
-                />
-              </label>
-              <div className="sheet-actions">
-                <button type="submit" className="btn-brass">
-                  Connect cloud
-                </button>
-                {api.kind === "cloud" && (
-                  <button type="button" className="btn-ghost" onClick={disconnect}>
-                    Use this device only
-                  </button>
-                )}
-              </div>
-            </form>
+            <button type="button" className="btn-brass" onClick={onConnect}>
+              Connect Supabase
+            </button>
           )}
         </section>
 
