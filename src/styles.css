@@ -576,6 +576,7 @@ textarea:focus {
   color: var(--paper-dim);
   font-size: 1.05rem;
   margin-bottom: 1.8rem;
+  overflow-wrap: anywhere;
 }
 
 .code-stack {
@@ -669,6 +670,11 @@ textarea:focus {
 .icon-btn svg {
   width: 18px;
   height: 18px;
+}
+
+.icon-btn.mobile-only,
+.mobile-only {
+  display: none;
 }
 
 .kind-grid {
@@ -776,6 +782,8 @@ code {
 
 .empty-list {
   padding: 2rem 0.4rem;
+  display: grid;
+  gap: 0.45rem;
 }
 
 @media (min-width: 900px) {
@@ -835,7 +843,8 @@ code {
     transform: translateX(0);
   }
 
-  .mobile-only {
+  .mobile-only,
+  .icon-btn.mobile-only {
     display: grid;
   }
 
