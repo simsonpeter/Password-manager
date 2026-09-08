@@ -1,0 +1,17 @@
+{
+  "name": "Keystone",
+  "short_name": "Keystone",
+  "description": "A quiet vault for gate, port, and door codes.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#100e0c",
+  "theme_color": "#100e0c",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
