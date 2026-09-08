@@ -1,39 +1,39 @@
-# Gate & Port Code Manager (Cloud)
+# Keystone
 
-Password-protected gate and port codes with **cloud login**. Use on any phone — codes sync online.
+A quiet vault for gate, port, and door codes. Sign in on any phone — your keys stay with you.
 
-## Live links
+The old Flask app is gone. This is a new design: warm atelier lighting, brass key-tags, and **Supabase** for cloud login and sync. Until you connect a project, everything is saved on the device you are using.
 
-| Link | What it is |
-|------|------------|
-| https://simsonpeter.github.io/Password-manager/ | Phone app (GitHub Pages) |
-| https://gate-port-codes.onrender.com | App + cloud API together (after Render setup) |
-
-**First time?** Deploy the cloud server: **[CLOUD_SETUP.md](CLOUD_SETUP.md)** (~5 min on your phone).
-
-## How it works
-
-1. **Create account** with email + password
-2. **Sign in** on any device
-3. **Codes tab** — list, search, edit, share, copy
-4. **Add tab** — add new names and codes (saved to cloud)
-
-## Features
-
-- Cloud account login (email + password)
-- All codes stored in cloud database
-- Multiple names, multiple codes per name
-- Works on phone, tablet, any browser
-- Edit, share, copy, delete
-- Change account password in settings
-
-## For developers
+## Use it
 
 ```bash
-pip install -r requirements.txt
-python run.py
+npm install
+npm run dev
 ```
 
-Open http://localhost:5000 — serves app + API.
+Open http://localhost:5173. Create a vault, add a gate, tap a brass plate to reveal the code.
 
-Deploy to Render with the included `render.yaml`.
+## Connect Supabase (cloud sync)
+
+1. Create a free project at [supabase.com](https://supabase.com).
+2. In the SQL editor, run [`supabase/schema.sql`](supabase/schema.sql).
+3. Copy **Project URL** and **anon public key** from Project Settings → API.
+4. Either:
+   - paste them in the app under **Settings → Supabase**, or
+   - put them in `.env`:
+
+```
+VITE_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+Then create an account in Keystone. Row Level Security keeps each user to their own codes.
+
+## GitHub Pages
+
+A workflow in `.github/workflows/pages.yml` builds and deploys the app. In the repo:
+
+1. Settings → Pages → Source: **GitHub Actions**
+2. Optional: add secrets `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` so the live site is cloud-backed by default.
+
+The live URL stays `https://simsonpeter.github.io/Password-manager/`.
