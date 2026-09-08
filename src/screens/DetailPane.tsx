@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BackIcon,
   CategoryMark,
@@ -41,6 +41,10 @@ export function DetailPane({
   emptyAction,
 }: Props) {
   const [revealed, setRevealed] = useState<Record<number, boolean>>({});
+
+  useEffect(() => {
+    setRevealed({});
+  }, [entry?.id]);
 
   if (!entry) {
     return (
