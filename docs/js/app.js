@@ -170,7 +170,7 @@
     codesContainer.innerHTML = "";
     codesContainer.appendChild(createCodeRow());
     renumberRows();
-    formTitle.textContent = "Add new";
+    formTitle.textContent = "Add a code";
     btnCancel.classList.add("hidden");
   }
 
@@ -201,8 +201,12 @@
     );
     entriesList.innerHTML = "";
     if (!sorted.length) {
-      entriesList.innerHTML =
-        '<p class="empty-state">No codes yet.<br>Tap <strong>Add</strong> below to create one.</p>';
+      entriesList.innerHTML = `
+        <div class="empty-state">
+          <svg class="empty-mark" viewBox="0 0 512 512" aria-hidden="true"><use href="#logo-mark"></use></svg>
+          <span class="empty-title">No codes yet</span>
+          Add a gate or port name to get started.
+        </div>`;
       entryCount.textContent = "0";
       return;
     }

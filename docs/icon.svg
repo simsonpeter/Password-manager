@@ -1,7 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Gate icon">
-  <rect width="512" height="512" rx="96" fill="#1a2332"/>
-  <rect x="96" y="160" width="320" height="256" rx="24" fill="#3b82f6"/>
-  <rect x="200" y="256" width="112" height="160" rx="8" fill="#0f1419"/>
-  <circle cx="280" cy="336" r="16" fill="#22c55e"/>
-  <path d="M96 160 L256 64 L416 160" fill="none" stroke="#8b9cb3" stroke-width="20" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Gate & Port Codes">
+  <rect width="512" height="512" rx="128" fill="#1F6F54"/>
+  <rect x="118" y="168" width="276" height="236" rx="48" fill="#F7F4EE"/>
+  <circle cx="256" cy="268" r="38" fill="#1F6F54"/>
+  <rect x="238" y="292" width="36" height="68" rx="12" fill="#1F6F54"/>
 </svg>

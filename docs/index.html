@@ -3,43 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#0f1419">
+  <meta name="theme-color" content="#F7F4EE">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="Cloud gate and port codes — login from any device">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="Private gate and port codes — available on any device">
   <title>Gate &amp; Port Codes</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+    <symbol id="logo-mark" viewBox="0 0 512 512">
+      <rect width="512" height="512" rx="128" fill="#1F6F54"/>
+      <rect x="118" y="168" width="276" height="236" rx="48" fill="#F7F4EE"/>
+      <circle cx="256" cy="268" r="38" fill="#1F6F54"/>
+      <rect x="238" y="292" width="36" height="68" rx="12" fill="#1F6F54"/>
+    </symbol>
+  </svg>
 
   <!-- LOADING -->
   <section id="screen-loading" class="screen auth-page">
-    <main class="auth-card">
-      <div class="auth-icon" aria-hidden="true">☁️</div>
-      <h1>Loading…</h1>
-      <p class="auth-subtitle">Connecting to cloud</p>
+    <main class="auth-card auth-card-compact">
+      <svg class="brand-mark" viewBox="0 0 512 512" aria-hidden="true"><use href="#logo-mark"/></svg>
+      <h1>Gate &amp; Port</h1>
+      <p class="auth-subtitle">Connecting…</p>
+      <div class="loader" aria-hidden="true"></div>
     </main>
   </section>
 
   <!-- LOGIN -->
   <section id="screen-login" class="screen auth-page hidden">
     <main class="auth-card">
-      <div class="auth-icon" aria-hidden="true">☁️</div>
-      <h1>Cloud Login</h1>
-      <p class="auth-subtitle">Sign in to access your codes from any phone.</p>
+      <svg class="brand-mark" viewBox="0 0 512 512" aria-hidden="true"><use href="#logo-mark"/></svg>
+      <p class="brand-kicker">Gate &amp; Port</p>
+      <h1>Welcome back</h1>
+      <p class="auth-subtitle">Sign in to open your codes on this device.</p>
       <form id="login-form" class="auth-form">
         <label for="login-email">Email</label>
-        <input type="email" id="login-email" required autocomplete="email" placeholder="your@email.com">
+        <input type="email" id="login-email" required autocomplete="email" placeholder="you@email.com">
         <label for="login-password">Password</label>
         <input type="password" id="login-password" required autocomplete="current-password" placeholder="Your password">
         <button type="submit" class="btn btn-primary btn-block">Sign in</button>
       </form>
       <p class="auth-footer">
-        No account?
-        <button type="button" class="auth-link" id="btn-go-register">Create account</button>
+        New here?
+        <button type="button" class="auth-link" id="btn-go-register">Create an account</button>
       </p>
     </main>
   </section>
@@ -47,12 +60,13 @@
   <!-- REGISTER -->
   <section id="screen-register" class="screen auth-page hidden">
     <main class="auth-card">
-      <div class="auth-icon" aria-hidden="true">✨</div>
+      <svg class="brand-mark" viewBox="0 0 512 512" aria-hidden="true"><use href="#logo-mark"/></svg>
+      <p class="brand-kicker">Gate &amp; Port</p>
       <h1>Create account</h1>
-      <p class="auth-subtitle">Your codes will be saved in the cloud.</p>
+      <p class="auth-subtitle">Your codes stay private and sync across devices.</p>
       <form id="register-form" class="auth-form">
         <label for="register-email">Email</label>
-        <input type="email" id="register-email" required autocomplete="email" placeholder="your@email.com">
+        <input type="email" id="register-email" required autocomplete="email" placeholder="you@email.com">
         <label for="register-password">Password</label>
         <input type="password" id="register-password" required minlength="6" autocomplete="new-password" placeholder="At least 6 characters">
         <label for="register-confirm">Confirm password</label>
@@ -70,32 +84,47 @@
   <section id="screen-app" class="screen hidden app-shell">
     <header class="topbar">
       <div class="topbar-brand">
-        <span class="brand-icon" aria-hidden="true">🚪</span>
-        <div>
-          <h1>Gate &amp; Port Codes</h1>
+        <svg class="brand-mark-sm" viewBox="0 0 512 512" aria-hidden="true"><use href="#logo-mark"/></svg>
+        <div class="topbar-titles">
+          <h1>Gate &amp; Port</h1>
           <p class="user-email" id="user-email"></p>
         </div>
       </div>
       <div class="topbar-actions">
-        <button type="button" class="btn btn-ghost btn-sm" id="btn-settings" title="Change password">⚙️</button>
-        <button type="button" class="btn btn-ghost btn-sm" id="btn-logout">Out</button>
+        <button type="button" class="icon-btn" id="btn-settings" title="Change password" aria-label="Change password">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H8.6A1.7 1.7 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V8.6a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>
+          </svg>
+        </button>
+        <button type="button" class="icon-btn" id="btn-logout" title="Sign out" aria-label="Sign out">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"/>
+            <path d="M16 17l5-5-5-5"/>
+            <path d="M21 12H9"/>
+          </svg>
+        </button>
       </div>
     </header>
 
-    <!-- TAB: CODES -->
     <div id="tab-codes" class="tab-panel active">
       <div class="tab-toolbar">
-        <input type="search" id="search" class="search-input" placeholder="Search names…" autocomplete="off">
+        <label class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="M20 20l-3-3"/>
+          </svg>
+          <input type="search" id="search" class="search-input" placeholder="Search names" autocomplete="off" aria-label="Search names">
+        </label>
         <span class="badge" id="entry-count">0</span>
       </div>
       <div id="entries-list" class="entries-list tab-scroll"></div>
     </div>
 
-    <!-- TAB: ADD -->
     <div id="tab-add" class="tab-panel">
       <div class="tab-scroll panel-form-inner">
-        <h2 id="form-title">Add new</h2>
-        <p class="panel-hint">Name + codes (1st, 2nd, 3rd…). Saved to cloud when you tap Save.</p>
+        <h2 id="form-title">Add a code</h2>
+        <p class="panel-hint">Give it a name, then add as many codes as you need. Everything saves to the cloud.</p>
         <form id="entry-form">
           <input type="hidden" id="entry-id" value="">
           <div class="field">
@@ -105,14 +134,14 @@
           <div class="field">
             <label>Codes</label>
             <div id="codes-container" class="codes-container"></div>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-code">+ Add another code</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-code">Add another code</button>
           </div>
           <div class="field">
             <label for="entry-notes">Notes <span class="optional">(optional)</span></label>
-            <textarea id="entry-notes" rows="3" placeholder="Location, directions…"></textarea>
+            <textarea id="entry-notes" rows="3" placeholder="Location, directions, anything useful"></textarea>
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary btn-block" id="btn-save">Save to cloud</button>
+            <button type="submit" class="btn btn-primary btn-block" id="btn-save">Save</button>
             <button type="button" class="btn btn-ghost btn-block hidden" id="btn-cancel">Cancel edit</button>
           </div>
         </form>
@@ -121,11 +150,17 @@
 
     <nav class="tab-bar" role="tablist">
       <button type="button" class="tab-btn active" data-tab="codes" role="tab" aria-selected="true">
-        <span class="tab-icon" aria-hidden="true">📋</span>
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="4" y="4" width="16" height="16" rx="3"/>
+          <path d="M8 9h8M8 13h5"/>
+        </svg>
         <span>Codes</span>
       </button>
       <button type="button" class="tab-btn" data-tab="add" role="tab" aria-selected="false">
-        <span class="tab-icon" aria-hidden="true">➕</span>
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="8"/>
+          <path d="M12 8v8M8 12h8"/>
+        </svg>
         <span>Add</span>
       </button>
     </nav>
@@ -134,16 +169,17 @@
   <dialog id="password-dialog" class="modal">
     <form id="password-form">
       <h3>Change password</h3>
+      <p class="panel-hint">Choose a new password for this account.</p>
       <div class="field">
-        <label for="current-password">Current</label>
+        <label for="current-password">Current password</label>
         <input type="password" id="current-password" required autocomplete="current-password">
       </div>
       <div class="field">
-        <label for="new-password">New</label>
+        <label for="new-password">New password</label>
         <input type="password" id="new-password" required minlength="6" autocomplete="new-password">
       </div>
       <div class="field">
-        <label for="confirm-password">Confirm new</label>
+        <label for="confirm-password">Confirm new password</label>
         <input type="password" id="confirm-password" required minlength="6" autocomplete="new-password">
       </div>
       <p class="form-error hidden" id="password-error"></p>
