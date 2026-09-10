@@ -17,11 +17,19 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+    <symbol id="logo-mark" viewBox="0 0 512 512">
+      <rect width="512" height="512" rx="128" fill="#1F6F54"/>
+      <rect x="118" y="168" width="276" height="236" rx="48" fill="#F7F4EE"/>
+      <circle cx="256" cy="268" r="38" fill="#1F6F54"/>
+      <rect x="238" y="292" width="36" height="68" rx="12" fill="#1F6F54"/>
+    </symbol>
+  </svg>
 
   <!-- LOADING -->
   <section id="screen-loading" class="screen auth-page">
     <main class="auth-card auth-card-compact">
-      <img src="icon.svg" class="brand-mark" width="72" height="72" alt="">
+      <svg class="brand-mark" viewBox="0 0 512 512" aria-hidden="true"><use href="#logo-mark"/></svg>
       <h1>Gate &amp; Port</h1>
       <p class="auth-subtitle">Connecting…</p>
       <div class="loader" aria-hidden="true"></div>
@@ -31,7 +39,7 @@
   <!-- LOGIN -->
   <section id="screen-login" class="screen auth-page hidden">
     <main class="auth-card">
-      <img src="icon.svg" class="brand-mark" width="72" height="72" alt="">
+      <svg class="brand-mark" viewBox="0 0 512 512" aria-hidden="true"><use href="#logo-mark"/></svg>
       <p class="brand-kicker">Gate &amp; Port</p>
       <h1>Welcome back</h1>
       <p class="auth-subtitle">Sign in to open your codes on this device.</p>
@@ -52,7 +60,7 @@
   <!-- REGISTER -->
   <section id="screen-register" class="screen auth-page hidden">
     <main class="auth-card">
-      <img src="icon.svg" class="brand-mark" width="72" height="72" alt="">
+      <svg class="brand-mark" viewBox="0 0 512 512" aria-hidden="true"><use href="#logo-mark"/></svg>
       <p class="brand-kicker">Gate &amp; Port</p>
       <h1>Create account</h1>
       <p class="auth-subtitle">Your codes stay private and sync across devices.</p>
@@ -76,7 +84,7 @@
   <section id="screen-app" class="screen hidden app-shell">
     <header class="topbar">
       <div class="topbar-brand">
-        <img src="icon.svg" class="brand-mark-sm" width="36" height="36" alt="">
+        <svg class="brand-mark-sm" viewBox="0 0 512 512" aria-hidden="true"><use href="#logo-mark"/></svg>
         <div class="topbar-titles">
           <h1>Gate &amp; Port</h1>
           <p class="user-email" id="user-email"></p>

@@ -203,7 +203,7 @@
     if (!sorted.length) {
       entriesList.innerHTML = `
         <div class="empty-state">
-          <img src="icon.svg" class="empty-mark" width="56" height="56" alt="">
+          <svg class="empty-mark" viewBox="0 0 512 512" aria-hidden="true"><use href="#logo-mark"></use></svg>
           <span class="empty-title">No codes yet</span>
           Add a gate or port name to get started.
         </div>`;
