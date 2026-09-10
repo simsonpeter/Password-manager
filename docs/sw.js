@@ -1,4 +1,4 @@
-const CACHE = "gate-codes-v6";
+const CACHE = "gate-codes-v7";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,6 +8,9 @@ const ASSETS = [
   "./js/app.js",
   "./manifest.json",
   "./icon.svg",
+  "./icon-180.png",
+  "./icon-192.png",
+  "./icon-512.png",
 ];
 
 self.addEventListener("install", (e) => {

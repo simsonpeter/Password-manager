@@ -436,4 +436,95 @@
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {});
   }
+
+  const INSTALL_DISMISS_KEY = "gate_install_dismissed";
+  let deferredInstall = null;
+
+  function isStandaloneApp() {
+    return (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true
+    );
+  }
+
+  function isIosDevice() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+  }
+
+  function hideInstallUi() {
+    document.getElementById("btn-install")?.classList.add("hidden");
+    document.getElementById("btn-install-auth")?.classList.add("hidden");
+    document.getElementById("install-auth-footer")?.classList.add("hidden");
+    document.getElementById("install-banner")?.classList.add("hidden");
+  }
+
+  function refreshInstallUi() {
+    if (isStandaloneApp()) {
+      hideInstallUi();
+      return;
+    }
+    const dismissed = localStorage.getItem(INSTALL_DISMISS_KEY);
+    const banner = document.getElementById("install-banner");
+    const bannerText = document.getElementById("install-banner-text");
+    const bannerInstall = document.getElementById("btn-install-banner");
+    const headerBtn = document.getElementById("btn-install");
+    const authBtn = document.getElementById("btn-install-auth");
+    const authFooter = document.getElementById("install-auth-footer");
+
+    if (deferredInstall) {
+      headerBtn?.classList.remove("hidden");
+      authBtn?.classList.remove("hidden");
+      authFooter?.classList.remove("hidden");
+      if (!dismissed) {
+        banner?.classList.remove("hidden");
+        if (bannerText) {
+          bannerText.textContent = "Add it to your home screen for a full-screen app.";
+        }
+        bannerInstall?.classList.remove("hidden");
+      }
+      return;
+    }
+
+    if (isIosDevice() && !dismissed) {
+      banner?.classList.remove("hidden");
+      if (bannerText) {
+        bannerText.textContent = "Tap Share, then Add to Home Screen.";
+      }
+      bannerInstall?.classList.add("hidden");
+    }
+  }
+
+  async function promptInstall() {
+    if (!deferredInstall) {
+      refreshInstallUi();
+      return;
+    }
+    deferredInstall.prompt();
+    const { outcome } = await deferredInstall.userChoice;
+    deferredInstall = null;
+    hideInstallUi();
+    if (outcome === "accepted") showToast("App installed");
+  }
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredInstall = event;
+    refreshInstallUi();
+  });
+
+  window.addEventListener("appinstalled", () => {
+    deferredInstall = null;
+    hideInstallUi();
+    showToast("App installed");
+  });
+
+  document.getElementById("btn-install")?.addEventListener("click", promptInstall);
+  document.getElementById("btn-install-auth")?.addEventListener("click", promptInstall);
+  document.getElementById("btn-install-banner")?.addEventListener("click", promptInstall);
+  document.getElementById("btn-install-dismiss")?.addEventListener("click", () => {
+    localStorage.setItem(INSTALL_DISMISS_KEY, "1");
+    document.getElementById("install-banner")?.classList.add("hidden");
+  });
+
+  refreshInstallUi();
 })();

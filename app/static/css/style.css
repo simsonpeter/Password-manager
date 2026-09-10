@@ -445,6 +445,61 @@ a.auth-link {
   background: var(--surface-hover);
 }
 
+.install-banner {
+  position: fixed;
+  left: 1rem;
+  right: 1rem;
+  bottom: calc(5.4rem + env(safe-area-inset-bottom));
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.75rem 0.75rem 0.75rem 0.85rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+}
+
+.install-banner.hidden {
+  display: none !important;
+}
+
+.install-banner-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.install-banner-copy strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.install-banner-copy p {
+  margin: 0.1rem 0 0;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.install-banner .btn-sm {
+  flex-shrink: 0;
+}
+
+.install-banner .icon-btn {
+  width: 36px;
+  height: 36px;
+}
+
+@media (min-width: 900px) {
+  .install-banner {
+    left: auto;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    width: min(420px, calc(100vw - 3rem));
+  }
+}
+
 .tab-panel {
   display: none;
   flex: 1;
