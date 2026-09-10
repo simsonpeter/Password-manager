@@ -94,11 +94,12 @@ h3 {
 }
 
 .brand-mark {
-  width: 56px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   display: block;
-  margin: 0 auto 1rem;
-  border-radius: 16px;
+  margin: 0 auto 1.1rem;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
 }
 
 .brand-mark-css {
@@ -863,10 +864,10 @@ a.auth-link {
 }
 
 .empty-state .empty-mark {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   margin: 0 auto 0.85rem;
-  opacity: 0.9;
+  border-radius: 16px;
 }
 
 .empty-state strong,
