@@ -106,6 +106,12 @@
             <path d="M5 21h14"/>
           </svg>
         </button>
+        <button type="button" class="icon-btn hidden" id="btn-lock" title="Hide codes" aria-label="Lock codes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="5" y="11" width="14" height="10" rx="2"/>
+            <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+          </svg>
+        </button>
         <button type="button" class="icon-btn" id="btn-settings" title="Change password" aria-label="Change password">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="3"/>
@@ -160,6 +166,44 @@
             <button type="button" class="btn btn-ghost btn-block hidden" id="btn-cancel">Cancel edit</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <div id="pin-overlay" class="pin-overlay hidden">
+      <div class="pin-card">
+        <svg class="brand-mark" viewBox="0 0 512 512" aria-hidden="true"><use href="#logo-mark"/></svg>
+        <h2 id="pin-title">Create a PIN</h2>
+        <p class="panel-hint" id="pin-hint">Choose 4 digits to reveal your codes.</p>
+        <div class="pin-dots" id="pin-dots" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <p class="form-error hidden" id="pin-error"></p>
+        <div class="pin-pad" id="pin-pad">
+          <button type="button" data-digit="1">1</button>
+          <button type="button" data-digit="2">2</button>
+          <button type="button" data-digit="3">3</button>
+          <button type="button" data-digit="4">4</button>
+          <button type="button" data-digit="5">5</button>
+          <button type="button" data-digit="6">6</button>
+          <button type="button" data-digit="7">7</button>
+          <button type="button" data-digit="8">8</button>
+          <button type="button" data-digit="9">9</button>
+          <button type="button" data-action="clear" class="pin-pad-muted">Clear</button>
+          <button type="button" data-digit="0">0</button>
+          <button type="button" data-action="back" class="pin-pad-muted" aria-label="Delete">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="20" height="20">
+              <path d="M17 6H8l-5 6 5 6h9a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Z"/>
+              <path d="M14 10l-4 4M10 10l4 4"/>
+            </svg>
+          </button>
+        </div>
+        <div class="field hidden" id="pin-reset-wrap">
+          <label for="pin-reset-password">Account password</label>
+          <input type="password" id="pin-reset-password" autocomplete="current-password" placeholder="Your login password">
+        </div>
+        <p class="auth-footer">
+          <button type="button" class="auth-link hidden" id="btn-forgot-pin">Forgot PIN?</button>
+        </p>
       </div>
     </div>
 

@@ -128,6 +128,11 @@ const CloudApi = (() => {
         new_password,
         confirm_password,
       }),
+    setPin: (pin, confirm_pin, current_pin) =>
+      request("POST", "/auth/pin", { pin, confirm_pin, current_pin }),
+    verifyPin: (pin) => request("POST", "/auth/pin/verify", { pin }),
+    resetPin: (password, pin, confirm_pin) =>
+      request("POST", "/auth/pin/reset", { password, pin, confirm_pin }),
     listEntries: () => request("GET", "/entries"),
     createEntry: (payload) => request("POST", "/entries", payload),
     updateEntry: (id, payload) => request("PUT", `/entries/${id}`, payload),

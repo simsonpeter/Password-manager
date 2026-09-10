@@ -56,7 +56,7 @@ def register():
         return jsonify({"error": str(exc)}), 400
 
     token = db.create_token(user["id"], user["email"])
-    return jsonify({"token": token, "email": user["email"]}), 201
+    return jsonify({"token": token, "email": user["email"], "has_pin": user["has_pin"]}), 201
 
 
 @api_bp.post("/auth/login")
@@ -73,7 +73,7 @@ def login():
         return jsonify({"error": "Wrong email or password."}), 401
 
     token = db.create_token(user["id"], user["email"])
-    return jsonify({"token": token, "email": user["email"]})
+    return jsonify({"token": token, "email": user["email"], "has_pin": user["has_pin"]})
 
 
 @api_bp.get("/auth/me")
@@ -99,6 +99,62 @@ def change_password():
         return jsonify({"error": str(exc)}), 400
 
     return jsonify({"ok": True})
+
+
+@api_bp.post("/auth/pin")
+@auth_required
+def set_pin():
+    data = request.get_json(silent=True) or {}
+    pin = str(data.get("pin") or "")
+    confirm = str(data.get("confirm_pin") or "")
+    current_pin = str(data.get("current_pin") or "")
+    user = request.current_user
+
+    if pin != confirm:
+        return jsonify({"error": "PINs do not match."}), 400
+
+    if user.get("has_pin"):
+        if not db.verify_user_pin(user["id"], current_pin):
+            return jsonify({"error": "Current PIN is incorrect."}), 400
+
+    try:
+        db.set_user_pin(user["id"], pin)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    return jsonify({"ok": True, "has_pin": True})
+
+
+@api_bp.post("/auth/pin/verify")
+@auth_required
+def verify_pin():
+    data = request.get_json(silent=True) or {}
+    pin = str(data.get("pin") or "")
+    if not db.verify_user_pin(request.current_user["id"], pin):
+        return jsonify({"error": "Wrong PIN."}), 401
+    return jsonify({"ok": True})
+
+
+@api_bp.post("/auth/pin/reset")
+@auth_required
+def reset_pin():
+    data = request.get_json(silent=True) or {}
+    password = data.get("password") or ""
+    pin = str(data.get("pin") or "")
+    confirm = str(data.get("confirm_pin") or "")
+
+    user = db.authenticate_user(request.current_user["email"], password)
+    if not user:
+        return jsonify({"error": "Account password is incorrect."}), 400
+    if pin != confirm:
+        return jsonify({"error": "PINs do not match."}), 400
+
+    try:
+        db.set_user_pin(request.current_user["id"], pin)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    return jsonify({"ok": True, "has_pin": True})
 
 
 @api_bp.get("/entries")

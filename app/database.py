@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT NOT NULL UNIQUE COLLATE NOCASE,
     password_hash TEXT NOT NULL,
+    pin_hash TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -55,6 +56,7 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
+    pin_hash TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -93,11 +95,13 @@ def _init_db_once() -> None:
                 for stmt in _postgres_statements():
                     cur.execute(stmt)
             conn.commit()
+        _ensure_pin_column()
         return
 
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     with get_connection() as conn:
         conn.executescript(SQLITE_SCHEMA)
+    _ensure_pin_column()
 
 
 def init_db(max_retries: int = 10, retry_delay: float = 3.0) -> None:
@@ -129,6 +133,17 @@ def ensure_db() -> None:
             return
         init_db()
         _db_ready = True
+
+
+def _ensure_pin_column() -> None:
+    with get_connection() as conn:
+        if using_postgres():
+            _execute(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS pin_hash TEXT")
+            return
+        info = _fetchall(conn, "PRAGMA table_info(users)")
+        cols = [row["name"] for row in info]
+        if "pin_hash" not in cols:
+            _execute(conn, "ALTER TABLE users ADD COLUMN pin_hash TEXT")
 
 
 def check_connection() -> bool:
@@ -283,6 +298,32 @@ def decode_token(token: str) -> dict | None:
         return None
 
 
+PIN_RE = re.compile(r"^\d{4}$")
+
+
+def validate_pin(pin: str) -> None:
+    if not PIN_RE.fullmatch(pin or ""):
+        raise ValueError("PIN must be 4 digits.")
+
+
+def set_user_pin(user_id: int, pin: str) -> None:
+    validate_pin(pin)
+    with get_connection() as conn:
+        _execute(
+            conn,
+            "UPDATE users SET pin_hash = ? WHERE id = ?",
+            (generate_password_hash(pin), user_id),
+        )
+
+
+def verify_user_pin(user_id: int, pin: str) -> bool:
+    with get_connection() as conn:
+        row = _fetchone(conn, "SELECT pin_hash FROM users WHERE id = ?", (user_id,))
+    if not row or not row.get("pin_hash"):
+        return False
+    return check_password_hash(row["pin_hash"], pin)
+
+
 def list_entries(user_id: int) -> list[dict]:
     with get_connection() as conn:
         rows = _fetchall(
@@ -378,6 +419,7 @@ def _row_to_user(row) -> dict:
     return {
         "id": row["id"],
         "email": row["email"],
+        "has_pin": bool(row.get("pin_hash")),
         "created_at": str(created),
     }
 

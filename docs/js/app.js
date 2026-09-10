@@ -3,6 +3,11 @@
 
   let entries = [];
   let currentEmail = "";
+  let codesUnlocked = false;
+  let hasPin = false;
+  let pinMode = "setup";
+  let pinBuffer = "";
+  let pendingPin = "";
 
   const screens = {
     loading: document.getElementById("screen-loading"),
@@ -27,6 +32,7 @@
   }
 
   function switchTab(tabName) {
+    if (!codesUnlocked && tabName === "add") return;
     document.querySelectorAll(".tab-btn").forEach((btn) => {
       const active = btn.dataset.tab === tabName;
       btn.classList.toggle("active", active);
@@ -91,7 +97,7 @@
     renderList();
   }
 
-  async function enterApp(email) {
+  async function enterApp(email, pinKnown) {
     currentEmail = email;
     document.getElementById("user-email").textContent = email;
     showScreen("app");
@@ -102,6 +108,17 @@
     } catch (err) {
       showToast(err.message || "Could not load codes");
     }
+    if (pinKnown === undefined) {
+      try {
+        const me = await CloudApi.me();
+        hasPin = !!me.has_pin;
+      } catch {
+        hasPin = false;
+      }
+    } else {
+      hasPin = !!pinKnown;
+    }
+    lockCodes();
   }
 
   function prefillLoginEmail() {
@@ -116,7 +133,7 @@
     if (!CloudApi.getToken()) return false;
     try {
       const user = await CloudApi.me();
-      await enterApp(user.email);
+      await enterApp(user.email, user.has_pin);
       return true;
     } catch {
       CloudApi.clearSession();
@@ -237,8 +254,14 @@
           <button type="button" class="btn btn-ghost btn-sm btn-delete">Delete</button>
         </div>
       `;
-      card.querySelector(".btn-edit").addEventListener("click", () => fillForm(entry));
-      card.querySelector(".btn-share").addEventListener("click", () => shareEntry(entry));
+      card.querySelector(".btn-edit").addEventListener("click", () => {
+        if (!codesUnlocked) return showToast("Enter PIN to reveal codes");
+        fillForm(entry);
+      });
+      card.querySelector(".btn-share").addEventListener("click", () => {
+        if (!codesUnlocked) return showToast("Enter PIN to reveal codes");
+        shareEntry(entry);
+      });
       card.querySelector(".btn-delete").addEventListener("click", async () => {
         if (!confirm("Delete this entry?")) return;
         try {
@@ -252,6 +275,7 @@
       });
       card.querySelectorAll(".btn-copy").forEach((btn) => {
         btn.addEventListener("click", async () => {
+          if (!codesUnlocked) return showToast("Enter PIN to reveal codes");
           try {
             await navigator.clipboard.writeText(btn.dataset.copy);
             showToast("Copied");
@@ -304,7 +328,7 @@
       CloudApi.clearSession();
       const data = await CloudApi.login(email, password);
       CloudApi.setSession(data.token, data.email);
-      await enterApp(data.email);
+      await enterApp(data.email, data.has_pin);
       showToast("Signed in");
     } catch (err) {
       showToast(err.message || "Login failed");
@@ -326,7 +350,7 @@
       CloudApi.clearSession();
       const data = await CloudApi.register(email, password);
       CloudApi.setSession(data.token, data.email);
-      await enterApp(data.email);
+      await enterApp(data.email, data.has_pin);
       showToast("Account created");
     } catch (err) {
       if (err.message === "Email already registered.") {
@@ -388,6 +412,12 @@
     CloudApi.clearSession();
     entries = [];
     currentEmail = "";
+    codesUnlocked = false;
+    hasPin = false;
+    pinBuffer = "";
+    pendingPin = "";
+    document.getElementById("screen-app")?.classList.remove("codes-locked");
+    document.getElementById("pin-overlay")?.classList.add("hidden");
     document.getElementById("login-password").value = "";
     if (email) document.getElementById("login-email").value = email;
     showScreen("login");
@@ -419,6 +449,202 @@
       errEl.textContent = err.message;
       errEl.classList.remove("hidden");
     }
+  });
+
+  function updatePinDots() {
+    document.querySelectorAll("#pin-dots span").forEach((dot, i) => {
+      dot.classList.toggle("filled", i < pinBuffer.length);
+    });
+  }
+
+  function setPinError(msg) {
+    const el = document.getElementById("pin-error");
+    const card = document.querySelector(".pin-card");
+    if (!el) return;
+    if (!msg) {
+      el.classList.add("hidden");
+      el.textContent = "";
+      return;
+    }
+    el.textContent = msg;
+    el.classList.remove("hidden");
+    card?.classList.add("shake");
+    setTimeout(() => card?.classList.remove("shake"), 400);
+  }
+
+  function showPinUi(mode) {
+    pinMode = mode;
+    pinBuffer = "";
+    updatePinDots();
+    setPinError("");
+    const title = document.getElementById("pin-title");
+    const hint = document.getElementById("pin-hint");
+    const forgot = document.getElementById("btn-forgot-pin");
+    const resetWrap = document.getElementById("pin-reset-wrap");
+    resetWrap?.classList.add("hidden");
+    if (mode === "setup") {
+      if (title) title.textContent = "Create a PIN";
+      if (hint) hint.textContent = "Choose 4 digits to reveal your codes.";
+      forgot?.classList.add("hidden");
+    } else if (mode === "confirm") {
+      if (title) title.textContent = "Confirm PIN";
+      if (hint) hint.textContent = "Enter the same 4 digits again.";
+      forgot?.classList.add("hidden");
+    } else if (mode === "unlock") {
+      if (title) title.textContent = "Enter PIN";
+      if (hint) hint.textContent = "Enter your PIN to reveal codes.";
+      forgot?.classList.remove("hidden");
+    } else if (mode === "reset-setup") {
+      if (title) title.textContent = "New PIN";
+      if (hint) hint.textContent = "Enter your account password, then a new 4-digit PIN.";
+      forgot?.classList.add("hidden");
+      resetWrap?.classList.remove("hidden");
+    } else if (mode === "reset-confirm") {
+      if (title) title.textContent = "Confirm new PIN";
+      if (hint) hint.textContent = "Enter the new PIN again.";
+      resetWrap?.classList.remove("hidden");
+    }
+  }
+
+  function setLocked(locked) {
+    codesUnlocked = !locked;
+    document.getElementById("screen-app")?.classList.toggle("codes-locked", locked);
+    document.getElementById("pin-overlay")?.classList.toggle("hidden", !locked);
+    document.getElementById("btn-lock")?.classList.toggle("hidden", locked);
+  }
+
+  function lockCodes() {
+    setLocked(true);
+    showPinUi(hasPin ? "unlock" : "setup");
+    renderList();
+  }
+
+  function unlockCodes() {
+    pinBuffer = "";
+    pendingPin = "";
+    setLocked(false);
+    renderList();
+    switchTab("codes");
+  }
+
+  async function handlePinComplete(pin) {
+    if (pinMode === "setup") {
+      pendingPin = pin;
+      showPinUi("confirm");
+      return;
+    }
+    if (pinMode === "confirm") {
+      if (pin !== pendingPin) {
+        setPinError("PINs do not match. Try again.");
+        pendingPin = "";
+        showPinUi("setup");
+        return;
+      }
+      try {
+        await CloudApi.setPin(pin, pin);
+        hasPin = true;
+        unlockCodes();
+        showToast("PIN saved");
+      } catch (err) {
+        setPinError(err.message);
+        showPinUi("setup");
+      }
+      return;
+    }
+    if (pinMode === "unlock") {
+      try {
+        await CloudApi.verifyPin(pin);
+        unlockCodes();
+      } catch {
+        setPinError("Wrong PIN");
+        pinBuffer = "";
+        updatePinDots();
+      }
+      return;
+    }
+    if (pinMode === "reset-setup") {
+      pendingPin = pin;
+      showPinUi("reset-confirm");
+      return;
+    }
+    if (pinMode === "reset-confirm") {
+      if (pin !== pendingPin) {
+        setPinError("PINs do not match. Try again.");
+        pendingPin = "";
+        showPinUi("reset-setup");
+        return;
+      }
+      const password = document.getElementById("pin-reset-password")?.value || "";
+      if (!password) {
+        setPinError("Enter your account password.");
+        showPinUi("reset-setup");
+        return;
+      }
+      try {
+        await CloudApi.resetPin(password, pin, pin);
+        hasPin = true;
+        unlockCodes();
+        showToast("PIN updated");
+      } catch (err) {
+        setPinError(err.message);
+        showPinUi("reset-setup");
+      }
+    }
+  }
+
+  function addPinDigit(digit) {
+    if (pinBuffer.length >= 4) return;
+    pinBuffer += digit;
+    updatePinDots();
+    if (pinBuffer.length === 4) {
+      const pin = pinBuffer;
+      pinBuffer = "";
+      setTimeout(() => handlePinComplete(pin), 80);
+    }
+  }
+
+  document.getElementById("pin-pad")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    if (btn.dataset.digit) addPinDigit(btn.dataset.digit);
+    if (btn.dataset.action === "back") {
+      pinBuffer = pinBuffer.slice(0, -1);
+      updatePinDots();
+    }
+    if (btn.dataset.action === "clear") {
+      pinBuffer = "";
+      updatePinDots();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    const overlay = document.getElementById("pin-overlay");
+    if (!overlay || overlay.classList.contains("hidden")) return;
+    const active = document.activeElement;
+    if (active && (active.id === "pin-reset-password" || active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
+      return;
+    }
+    if (e.key >= "0" && e.key <= "9") {
+      e.preventDefault();
+      addPinDigit(e.key);
+    } else if (e.key === "Backspace") {
+      e.preventDefault();
+      pinBuffer = pinBuffer.slice(0, -1);
+      updatePinDots();
+    }
+  });
+
+  document.getElementById("btn-lock")?.addEventListener("click", () => {
+    if (!codesUnlocked) return;
+    lockCodes();
+    showToast("Codes hidden");
+  });
+
+  document.getElementById("btn-forgot-pin")?.addEventListener("click", () => {
+    pendingPin = "";
+    const resetInput = document.getElementById("pin-reset-password");
+    if (resetInput) resetInput.value = "";
+    showPinUi("reset-setup");
   });
 
   codesContainer.appendChild(createCodeRow());
