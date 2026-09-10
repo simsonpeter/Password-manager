@@ -100,6 +100,8 @@ h3 {
   margin: 0 auto 1.1rem;
   border-radius: 20px;
   box-shadow: var(--shadow);
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .brand-mark-css {
@@ -147,6 +149,7 @@ h3 {
   height: 36px;
   border-radius: 10px;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .brand-kicker {
