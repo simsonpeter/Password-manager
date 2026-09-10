@@ -78,7 +78,7 @@
     codesContainer.innerHTML = "";
     codesContainer.appendChild(createCodeRow());
     updateRemoveButtons();
-    formTitle.textContent = "Add entry";
+    formTitle.textContent = "Add a code";
     btnCancel.classList.add("hidden");
   }
 
@@ -120,9 +120,9 @@
       .map(
         (code, i) => `
       <li>
-        <span class="code-label">${ordinal(i + 1)} code</span>
+        <span class="code-label">${ordinal(i + 1)}</span>
         <code class="code-value">${escapeHtml(code)}</code>
-        <button type="button" class="btn-copy" data-copy="${escapeAttr(code)}" title="Copy">📋</button>
+        <button type="button" class="btn-copy" data-copy="${escapeAttr(code)}" title="Copy">Copy</button>
       </li>`
       )
       .join("");
@@ -131,8 +131,12 @@
       <div class="entry-header">
         <h3 class="entry-name">${escapeHtml(entry.name)}</h3>
         <div class="entry-actions">
-          <button type="button" class="btn-icon btn-edit" data-id="${entry.id}" title="Edit">✏️</button>
-          <button type="button" class="btn-icon btn-delete" data-id="${entry.id}" title="Delete">🗑️</button>
+          <button type="button" class="btn-icon btn-edit" data-id="${entry.id}" title="Edit" aria-label="Edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5z"/></svg>
+          </button>
+          <button type="button" class="btn-icon btn-delete" data-id="${entry.id}" title="Delete" aria-label="Delete">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M7 7l1 13h8l1-13"/></svg>
+          </button>
         </div>
       </div>
       <ol class="code-list">${codesHtml}</ol>
@@ -187,7 +191,7 @@
       empty = document.createElement("p");
       empty.id = "empty-state";
       empty.className = "empty-state";
-      empty.textContent = "No entries yet. Add your first gate or port name above.";
+      empty.textContent = "No entries yet. Add your first gate or port name.";
       entriesList.appendChild(empty);
     } else if (hasCards && empty) {
       empty.remove();
